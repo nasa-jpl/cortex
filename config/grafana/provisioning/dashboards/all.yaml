@@ -1,0 +1,9 @@
+apiVersion: 1
+
+providers:
+  - name: 'CORTEX'
+    org_id: 1
+    type: 'file'
+    options:
+      path: '/var/lib/grafana/dashboards/cortex.json'
+    allowUiUpdates: true
