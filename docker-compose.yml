@@ -1,0 +1,66 @@
+services:
+  init:
+    image: timescale/timescaledb-ha:pg15
+    user: root
+    network_mode: host
+    volumes:
+      - ${PERSISTENCE_DIRECTORY}/cortex/timescaledb:/home/postgres/pgdata/data
+      - ${PERSISTENCE_DIRECTORY}/cortex/grafana:/var/lib/grafana
+    entrypoint:
+      - sh
+      - -c
+      - |
+        chown -R 1000:1000 /home/postgres/pgdata/data /var/lib/grafana
+
+  database:
+    depends_on:
+      init:
+        condition: service_completed_successfully
+    image: timescale/timescaledb-ha:pg15
+    restart: always
+    hostname: ${TIMESCALE_HOSTNAME}
+    container_name: ${TIMESCALE_HOSTNAME}
+#    user: "0"
+    user: 1000:1000
+    network_mode: host
+    env_file:
+      - ${TIMESCALE_CONFIG}/.env
+    volumes:
+      - ${PERSISTENCE_DIRECTORY}/cortex/timescaledb:/home/postgres/pgdata/data
+      - ${TIMESCALE_CONFIG}/init:/docker-entrypoint-initdb.d:ro
+    deploy:
+      resources:
+        limits:
+          cpus: ${TIMESCALE_CPU_LIMIT}
+          memory: ${TIMESCALE_MEMORY_LIMIT}
+        reservations:
+          cpus: ${TIMESCALE_CPU_RESERVATION}
+          memory: ${TIMESCALE_MEMORY_RESERVATION}
+
+  dashboard:
+    depends_on:
+      database:
+        condition: service_started
+    image: grafana/grafana-enterprise:latest
+#    user: "0"
+    user: 1000:1000
+    restart: always
+    hostname: ${GRAFANA_HOSTNAME}
+    container_name: ${GRAFANA_HOSTNAME}
+    network_mode: host
+    env_file:
+      - ${GRAFANA_CONFIG}/.env
+    volumes:
+      - ${PERSISTENCE_DIRECTORY}/cortex/grafana:/var/lib/grafana
+      - ${GRAFANA_CONFIG}/provisioning:/etc/grafana/provisioning
+      - ${GRAFANA_CONFIG}/dashboards:/var/lib/grafana/dashboards
+      - ${GRAFANA_CONFIG}/plugins/dist:/var/lib/grafana/plugins/urdf-viewer
+      - ${GRAFANA_CONFIG}/.ini:/etc/grafana/grafana.ini
+    deploy:
+      resources:
+        limits:
+          cpus: ${GRAFANA_CPU_LIMIT}
+          memory: ${GRAFANA_MEMORY_LIMIT}
+        reservations:
+          cpus: ${GRAFANA_CPU_RESERVATION}
+          memory: ${GRAFANA_MEMORY_RESERVATION}

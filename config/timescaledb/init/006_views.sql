@@ -1,0 +1,1 @@
+-- This file should be placed in the /docker-entrypoint-initdb.d directory
