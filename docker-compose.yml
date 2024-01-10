@@ -18,8 +18,8 @@ services:
         condition: service_completed_successfully
     image: timescale/timescaledb-ha:pg15
     restart: always
-    hostname: ${TIMESCALE_HOSTNAME}
-    container_name: ${TIMESCALE_HOSTNAME}
+    hostname: ${TIMESCALE_CONTAINER}
+    container_name: ${TIMESCALE_CONTAINER}
     user: 1000:1000
     network_mode: host
     env_file:
@@ -43,8 +43,8 @@ services:
     image: grafana/grafana-enterprise:latest
     user: 1000:1000
     restart: always
-    hostname: ${GRAFANA_HOSTNAME}
-    container_name: ${GRAFANA_HOSTNAME}
+    hostname: ${GRAFANA_CONTAINER}
+    container_name: ${GRAFANA_CONTAINER}
     network_mode: host
     env_file:
       - ${GRAFANA_CONFIG}/.env
