@@ -3,16 +3,17 @@
     robot: String
     key: String
     value: String
-    indexes: host, key
+    indices: host, key
 
 - annotation, event, heartbeat:
     robot: String
+    host: String
     label: String
     message: String
     tags: String[], Nullable
     level: String, Nullable
     end_time: DateTime, Nullable
-    indexes: robot+label
+    indices: robot+label
 
 - metric, parameter:
     robot: String
@@ -30,7 +31,7 @@
     memory_percent: Float64
     num_threads: Int64
     num_fds: Int64
-    indexes: robot+actuator
+    indices: robot+actuator
 
 - joint_states_actual, joint_states_commanded:
     robot: String
@@ -38,14 +39,14 @@
     position: Float64
     velocity: Float64
     effort: Float64
-    indexes: robot, robot+actuator
+    indices: robot, robot+actuator
 
 - force_torque_sensor:
     robot: String
     actuator: String
     force: Float64[]
     torque: Float64[]
-    indexes: robot+actuator
+    indices: robot+actuator
 
 - state_transitions:
     robot: String
@@ -54,7 +55,7 @@
     state_enum: Int64
     state_string: String
     module: String, Nullable
-    indexes: robot+current_state
+    indices: robot+current_state
 
 - topic_statistics:
     robot: String
@@ -72,7 +73,7 @@
     stamp_age_mean: Float64
     stamp_age_stddev: Float64
     stamp_age_max: Float64
-    indexes: robot+topic
+    indices: robot+topic
 
 - odom:
     robot: String
@@ -80,4 +81,4 @@
     position: Float64[]
     orientation: Float64[]
     rpy: Float64[]
-    indexes: robot+actuator
+    indices: robot+actuator
