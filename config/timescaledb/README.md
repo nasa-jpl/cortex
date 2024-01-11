@@ -1,4 +1,4 @@
 # TimescaleDB Configuration
 
 ## Specifying Tables
-[!Table Generation Process]("../../docs/diagrams/table_generation.png")
+[![Table Generation](../../docs/diagrams/table_generation.png)](../../docs/diagrams/table_generation.png)
