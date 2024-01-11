@@ -45,6 +45,8 @@ In order to simplify the syntax, the following features are implemented and hand
 - A comma-separated list of table names may be used instead of a single name to create multiple tables with the same
   exact schema.
 - The qualifiers `Nullable` and `Unique` may be added after the column type to specify nullable and unique columns
+- Table names, regardless of how they are entered in the YAML file, will always be converted to lower case in the
+  database, and the SQLAlchemy classes will always use CamelCase.
 
 ## CORTEX Table Specification
 
@@ -123,11 +125,11 @@ create index if not exists annotation_robot_label_idx ON ts_annotation (robot, l
 
 The following pseudo-grammar describes the YAML syntax:
 ```
-table_name :- [a-z_]+
-column_name :- [a-z_]+
+table_name :- [a-zA-Z_]+
+column_name :- [a-zA-Z_]+
 base_type :- String | Float64 | Int64 | DateTime
 array_type :- <base_type>[]
-column_type :- base_type | array_type
+column_type :- <base_type> | <array_type>
 column_qualifier :- Nullable | Unique | Nullable, Unique | Unique, Nullable
 column_index :- <column_name> | <column_index>+<column_name> | <column_index>, <column_index>
 foreign_key :- <table_name>.<column_name> | <foreign_key>, <foreign_key>
