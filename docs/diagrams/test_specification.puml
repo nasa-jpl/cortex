@@ -1,0 +1,71 @@
+@startuml
+
+file spec [
+Test Specification with Parameterization, Success/Failure Criteria, and Requirements Mapping (YAML)
+
+{{yaml
+    name: Hold and Climb
+    timeout: 240 s
+    robot: EELS 1.0
+    environment: Athabasca Moulin No. 2
+    mission:
+      contact:
+        min_screws: 4
+        max_torque: 40.0 Nm
+        max_force: 100.0 N
+      hold:
+        time: 10.0 s
+        max_displacement: 0.1 m
+      climb:
+        direction: [UP, DOWN]
+        velocity: [0.1 - 0.5] m/s
+        step: 0.1 m/s
+        distance: 5.0 m
+        tolerance: 0.25 m
+    requirements:
+      - 1.3.2 Hold and Climb
+      - 2.1.1 Vertical Ascent
+      - 2.2.1 Vertical Descent
+      - 3.3.2 Torque Limits
+}}
+]
+
+class Contact {
+    + run(): TestResult
+    - min_screws: int
+    - max_torque: float
+    - max_force: float
+}
+
+class Hold {
+    + run(): TestResult
+    - time: float
+    - max_displacement: float
+}
+
+class Climb {
+    + run(): TestResult
+    - direction: Direction
+    - velocity: float
+    - step: float
+    - distance: float
+    - tolerance: float
+}
+
+class TestSuite {
+    + run(): TestResult
+    ~ name: string
+    ~ timeout: float
+    ~ robot: string
+    ~ environment: string
+    ~ mission: Mission
+    ~ requirements: string[]
+}
+
+spec ...> TestSuite : Generates
+TestSuite --> Contact : Runs
+TestSuite --> Hold : Runs
+TestSuite --> Climb : Runs
+
+
+@enduml

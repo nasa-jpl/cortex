@@ -1,0 +1,1 @@
+The diagrams in this directory are generated using [PlantUML](https://plantuml.com).

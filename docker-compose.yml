@@ -2,7 +2,7 @@ services:
   init:
     image: timescale/timescaledb-ha:pg15
     user: root
-    network_mode: host
+    network_mode: ${DOCKER_NETWORK_MODE}
     volumes:
       - ${PERSISTENCE_DIRECTORY}/cortex/timescaledb:/home/postgres/pgdata/data
       - ${PERSISTENCE_DIRECTORY}/cortex/grafana:/var/lib/grafana
@@ -10,20 +10,20 @@ services:
       - sh
       - -c
       - |
-        chown -R 1000:1000 /home/postgres/pgdata/data /var/lib/grafana
+        chown -R ${DOCKER_CONTAINER_USER} /home/postgres/pgdata/data /var/lib/grafana
 
   database:
     depends_on:
       init:
         condition: service_completed_successfully
-    image: timescale/timescaledb-ha:pg15
+    image: ${TIMESCALE_IMAGE}
     restart: always
     hostname: ${TIMESCALE_CONTAINER}
     container_name: ${TIMESCALE_CONTAINER}
-    user: 1000:1000
-    network_mode: host
+    user: ${DOCKER_CONTAINER_USER}
+    network_mode: ${DOCKER_NETWORK_MODE}
     env_file:
-      - ${TIMESCALE_CONFIG}/.env
+      - .env
     volumes:
       - ${PERSISTENCE_DIRECTORY}/cortex/timescaledb:/home/postgres/pgdata/data
       - ${TIMESCALE_CONFIG}/init:/docker-entrypoint-initdb.d:ro
@@ -40,14 +40,14 @@ services:
     depends_on:
     - init
     - database
-    image: grafana/grafana-enterprise:latest
-    user: 1000:1000
+    image: ${GRAFANA_IMAGE}
+    user: ${DOCKER_CONTAINER_USER}
     restart: always
     hostname: ${GRAFANA_CONTAINER}
     container_name: ${GRAFANA_CONTAINER}
-    network_mode: host
+    network_mode: ${DOCKER_NETWORK_MODE}
     env_file:
-      - ${GRAFANA_CONFIG}/.env
+      - .env
     volumes:
       - ${PERSISTENCE_DIRECTORY}/cortex/grafana:/var/lib/grafana
       - ${GRAFANA_CONFIG}/provisioning:/etc/grafana/provisioning

@@ -94,7 +94,7 @@ deployed in a production environment.
 
 The `sensing` device is likely to be constrained in terms of resource availability, especially CPU, memory, and network
 bandwidth. For this reason, the `sensing` device is not a good candidate for running anything other than the `monitor`
-and `bagger` nodes. Additionally, if a `bagger` node is run on this device, we recommend settings its trigger level
+and `bagger` nodes. Additionally, if a `bagger` node is run on this device, we recommend setting its trigger level
 to `high`, so that it only records data when the `Log Extra` button is enabled.
 
 # Additional Notes
@@ -103,4 +103,3 @@ of deploying nodes (and therefore workers) across multiple devices. While the im
 details are still being worked out, the basic idea is to optimize the distribution
 of nodes across devices based on the network topology, actuator/sensor locality, and
 resource utilization, and other factors.
-

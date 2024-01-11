@@ -54,7 +54,7 @@ library in terms of its modules. This list does not include the ROS nodes that a
 ### Agents
 
 CORTEX Agents can be thought of as components that are responsible for performing specific tasks in a robotics system.
-They are typically implemented inn the form of Python scripts, and can be configured using YAML files (where
+They are typically implemented in the form of Python scripts, and can be configured using YAML files (where
 applicable). These scripts are not intended to be imported as libraries, but rather to be run standalone as ROS nodes.
 In the future, we may migrate these scripts to C++ for improved performance.
 

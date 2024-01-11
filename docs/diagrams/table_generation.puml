@@ -1,0 +1,35 @@
+@startuml
+
+file spec [
+Environment Table
+
+---
+{{yaml
+    host: String
+    robot: String
+    key: String
+    value: String
+    indexes: host, key
+}}
+]
+
+object Parser
+object Generator
+
+class "Environment Entity" {
+- __tablename__ = ts_environment
++ time = Column(DateTime)
++ ros_time = Column(DateTime)
++ host = Column(String, index=True)
++ robot = Column(String)
++ key = Column(String, index=True)
++ value = Column(String)
+}
+
+
+
+spec -> Parser
+Parser -> Generator
+Generator -> "Environment Entity"
+
+@enduml
