@@ -13,8 +13,9 @@ Environment Table
 }}
 ]
 
-object Parser
-object Generator
+file table_generator [
+CRTXTableGenerator
+]
 
 class "Environment Entity" {
 - __tablename__ = ts_environment
@@ -28,8 +29,7 @@ class "Environment Entity" {
 
 
 
-spec -> Parser
-Parser -> Generator
-Generator -> "Environment Entity"
+spec -> table_generator
+table_generator -> "Environment Entity"
 
 @enduml
