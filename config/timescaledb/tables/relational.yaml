@@ -7,7 +7,7 @@
     type: String
     make: String
     model: String
-    serial: String, Nullable
+    serial_no: String, Nullable
     indices: name
     foreign_keys: robot.id
 - host:

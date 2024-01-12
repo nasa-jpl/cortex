@@ -127,9 +127,9 @@ The following pseudo-grammar describes the YAML syntax:
 ```
 table_name :- [a-zA-Z_]+
 column_name :- [a-zA-Z_]+
-base_type :- String | Float64 | Int64 | DateTime
+base_type :- String | Float64 | Int64
 array_type :- <base_type>[]
-column_type :- <base_type> | <array_type>
+column_type :- <base_type> | <array_type> | DateTime
 column_qualifier :- Nullable | Unique | Nullable, Unique | Unique, Nullable
 column_index :- <column_name> | <column_index>+<column_name> | <column_index>, <column_index>
 foreign_key :- <table_name>.<column_name> | <foreign_key>, <foreign_key>

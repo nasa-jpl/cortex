@@ -31,7 +31,7 @@
     memory_percent: Float64
     num_threads: Int64
     num_fds: Int64
-    indices: robot+actuator
+    indices: robot
 
 - joint_states_actual, joint_states_commanded:
     robot: String
@@ -81,4 +81,4 @@
     position: Float64[]
     orientation: Float64[]
     rpy: Float64[]
-    indices: robot+actuator
+    indices: robot+frame
