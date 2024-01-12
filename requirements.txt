@@ -1,7 +1,0 @@
-PyYAML==6.0.1
-psutil==5.9.7
-psycopg2==2.9.9
-SQLAlchemy==2.0.25
-GeoAlchemy2==0.14.3
-shapely==2.0.1
-sqlalchemy-timescaledb==0.4.1

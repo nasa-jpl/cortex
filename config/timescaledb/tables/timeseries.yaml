@@ -18,7 +18,7 @@
 - metric, parameter:
     robot: String
     name: String
-    real: Float64, Nullable
+    real: Double, Nullable
     str: String, Nullable
 
 - node_resource_utilization:
@@ -27,32 +27,32 @@
     host: String
     process: String
     status: String
-    cpu_percent: Float64
-    memory_percent: Float64
-    num_threads: Int64
-    num_fds: Int64
+    cpu_percent: Double
+    memory_percent: Double
+    num_threads: Integer
+    num_fds: Integer
     indices: robot
 
 - joint_states_actual, joint_states_commanded:
     robot: String
     actuator: String
-    position: Float64
-    velocity: Float64
-    effort: Float64
+    position: Double
+    velocity: Double
+    effort: Double
     indices: robot, robot+actuator
 
 - force_torque_sensor:
     robot: String
     actuator: String
-    force: Float64[]
-    torque: Float64[]
+    force: Double[]
+    torque: Double[]
     indices: robot+actuator
 
 - state_transitions:
     robot: String
     previous_state: String
     current_state: String
-    state_enum: Int64
+    state_enum: Integer
     state_string: String
     module: String, Nullable
     indices: robot+current_state
@@ -64,21 +64,21 @@
     node_publisher: String
     start_time: DateTime
     end_time: DateTime
-    dropped_messages: Int64
-    delivered_messages: Int64
-    traffic: Int64
-    period_mean: Float64
-    period_stddev: Float64
-    period_max: Float64
-    stamp_age_mean: Float64
-    stamp_age_stddev: Float64
-    stamp_age_max: Float64
+    dropped_messages: Integer
+    delivered_messages: Integer
+    traffic: Integer
+    period_mean: Double
+    period_stddev: Double
+    period_max: Double
+    stamp_age_mean: Double
+    stamp_age_stddev: Double
+    stamp_age_max: Double
     indices: robot+topic
 
 - odom:
     robot: String
     frame: String
-    position: Float64[]
-    orientation: Float64[]
-    rpy: Float64[]
+    position: Double[]
+    orientation: Double[]
+    rpy: Double[]
     indices: robot+frame

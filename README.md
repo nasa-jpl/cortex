@@ -118,12 +118,12 @@ real-time performance, improved security, and better support for embedded system
 
 The following components of CORTEX can be configured:
 
-- Docker containers, see [docker-compose.yml](docker-compose.yml)
+- Docker containers, see [docker-compose.yml](docker-compose.yml) and [.env](.env)
 - Database (PostgreSQL w/ TimescaleDB), see [config/timescaledb/README.md](config/timescaledb/README.md)
 - Device Metrics (Telegraf), see [config/telegraf/README.md](config/telegraf/README.md)
 - Grafana (Dashboard), see [config/grafana/README.md](config/grafana/README.md)
-- ROS Workers, see [config/workers/README.md](config/workers/README.md)
-- ROS Bags, see [config/rosbags/README.md](config/rosbags/README.md)
+- ROS Workers, see [src/cortex/config/workers/README.md](src/cortex/config/workers/README.md)
+- ROS Bags, see [src/cortex/config/rosbags/README.md](src/cortex/config/rosbags/README.md)
 
 ### Single Device vs. Multi-device
 

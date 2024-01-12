@@ -7,7 +7,7 @@ dramatically simpler. In fact, the only initialization needed is to include the 
 PostGIS, etc.). 
 
 That said, if you want to manually configure the database initialization, you can do so by adding SQL code to files in
-the `init` folder. You will notice that the existing file(s) start with `xxx_`. These numbers are used to determine
+the `init` folder. You will notice that the existing files start with `xxx_`. These numbers are used to determine
 the order in which the SQL files are run during initialization. If you want to add your own SQL files, make sure to
 choose a `xxx_` prefix that has not already been chosen.
 
@@ -26,7 +26,7 @@ we have devised a method for declaring the tables in YAML files (using a custom 
 SQLAlchemy entities (see diagram below). These YAML declarations are contained in the `./tables` folder:
 
 - `relational.yaml`: declares traditional PostgreSQL relational tables, implies `id` column as primary key
-- `timeseries.yaml`: declares TimescaleDB hypertables, implies `time` and `ros_time` columns
+- `timeseries.yaml`: declares TimescaleDB hypertables, implies `time` and `msg_time` columns
 
 Each of these files have been populated with a default set of tables that should be widely applicable to all robotics
 projects. You will likely want to define your own custom tables for your specific needs. In order to do so, you will
@@ -39,12 +39,12 @@ need to use the appropriate syntax in order to correctly generate the SQLAlchemy
 
 In order to simplify the syntax, the following features are implemented and handled automatically upon generation:
 
-- Table names are prepended with either `rel_` (relational) or `ts_` (time-series) depending on which file they are in.
+- Upon generation, table names are prepended with either `rel_` (relational) or `ts_` (time-series) depending on which file they are in.
 - Relational tables receive column `id` as a primary key.
 - Time-series tables receive columns `time` and `msg_time`, and are declared as TimescaleDB hypertables.
 - A comma-separated list of table names may be used instead of a single name to create multiple tables with the same
   exact schema.
-- The qualifiers `Nullable` and `Unique` may be added after the column type to specify nullable and unique columns
+- The qualifiers `Nullable` and `Unique` may be added after the column type to specify nullable and unique constraints
 - Table names, regardless of how they are entered in the YAML file, will always be converted to lower case in the
   database, and the SQLAlchemy classes will always use CamelCase.
 
@@ -127,7 +127,7 @@ The following pseudo-grammar describes the YAML syntax:
 ```
 table_name :- [a-zA-Z_]+
 column_name :- [a-zA-Z_]+
-base_type :- String | Float64 | Int64
+base_type :- String | Double | Integer
 array_type :- <base_type>[]
 column_type :- <base_type> | <array_type> | DateTime
 column_qualifier :- Nullable | Unique | Nullable, Unique | Unique, Nullable
