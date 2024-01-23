@@ -29,6 +29,34 @@ provides a set of tools for specifying and running experiments in a repeatable m
 data from those experiments. Finally, CORTEX provides facilities for single- and multi-device configuration management,
 logging, and monitoring, which are essential for managing and operating complex robotics systems.
 
+# Installation
+CORTEX is installed as a Python library. Follow these steps:
+
+## Standard Installation
+The standard installation will build the library and add it to your default `python/dist-packages`. The library will be
+called `jpl-neo-cortex`. All the dependencies (found in `setup.py`) will be installed as well.
+
+```shell
+python setup.py install
+```
+
+## Root Installation
+In some cases, you may get a `Permission denied:` error. In that case, you need to run the setup script as root:
+
+```shell
+sudo python setup.py install
+```
+
+# Usage
+After installing the CORTEX Python library, you can import the modules as follows:
+
+```python
+import cortex
+from cortex.db import TemporalCRTX
+from cortex.db.entities import *
+# etc...
+```
+
 ## Architecture
 
 CORTEX is intended to work with a wide variety of robots and configurations. It is designed to be as
@@ -139,10 +167,6 @@ the latter is more complex and requires additional setup.
 [//]: # (TODO)
 
 ### Prerequisites
-
-[//]: # (TODO)
-
-### Installation
 
 [//]: # (TODO)
 
