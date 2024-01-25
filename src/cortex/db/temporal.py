@@ -65,6 +65,22 @@ class TemporalCRTX:
         session = self.__session()
         return session
 
+    def insert(self, data):
+        if not isinstance(data, list):
+            data = [data]
+        with self.__conditional_lock:
+            for entity in data:
+                try:
+                    self.__queue.put(entity)
+                    self.__queue_size += 1
+                except queue.Full:
+                    print(
+                        f"EELSdB: Failed to insert entity due to full queue (size={self.__queue_size})."
+                    )
+                    continue
+            if self.__queue_size >= self.batch_size:
+                self.__conditional_lock.notify()
+
     def __log_or_print(self, message, log_throttle_time=None):
         """A helper function that logs a message if ROS is running, otherwise prints it to stdout."""
         print(f"Logging: {message}")

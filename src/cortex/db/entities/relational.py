@@ -27,7 +27,7 @@ from sqlalchemy import (
     ForeignKey,
     DOUBLE_PRECISION,
 )
-from . import Base
+from cortex.db.entities import Base
 
 
 class Robot(Base):

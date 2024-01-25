@@ -1,0 +1,21 @@
+###################################################
+# Robot State
+- topic: /joint_states
+  data_type: JointState
+  msg_pkg: sensor_msgs.msg
+  hz: 5
+  target: joint_states_actual
+  preprocessors:
+    - flatten:
+        fields:
+          - name
+          - position
+          - velocity
+          - effort
+  transforms:
+    - time: time
+    - ros_time: ros_time
+    - actuator: name
+    - position: position
+    - velocity: velocity
+    - effort: effort

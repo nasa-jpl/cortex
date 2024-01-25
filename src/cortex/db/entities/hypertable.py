@@ -27,7 +27,7 @@ from sqlalchemy import (
     ForeignKey,
     DOUBLE_PRECISION,
 )
-from . import Base
+from cortex.db.entities import Base
 
 
 class Environment(Base):
@@ -39,7 +39,8 @@ class Environment(Base):
         }
     }
 
-    time = Column(DateTime(timezone=True), nullable=False, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    time = Column(DateTime(timezone=True), primary_key=True, nullable=False)
     msg_time = Column(DateTime(timezone=True), nullable=True)
     host = Column(String, nullable=False)
     robot = Column(String, nullable=False)
@@ -47,7 +48,7 @@ class Environment(Base):
     value = Column(String, nullable=False)
 
     def __repr__(self):
-        return f"""<Environment(time='{self.time}', msg_time='{self.msg_time}', host='{self.host}', robot='{self.robot}', key='{self.key}', value='{self.value}')>"""
+        return f"""<Environment(id='{self.id}', time='{self.time}', msg_time='{self.msg_time}', host='{self.host}', robot='{self.robot}', key='{self.key}', value='{self.value}')>"""
 
 
 Index("idx_environment_host", Environment.host)
@@ -63,7 +64,8 @@ class Annotation(Base):
         }
     }
 
-    time = Column(DateTime(timezone=True), nullable=False, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    time = Column(DateTime(timezone=True), primary_key=True, nullable=False)
     msg_time = Column(DateTime(timezone=True), nullable=True)
     robot = Column(String, nullable=False)
     host = Column(String, nullable=False)
@@ -74,7 +76,7 @@ class Annotation(Base):
     end_time = Column(DateTime(timezone=True), nullable=True)
 
     def __repr__(self):
-        return f"""<Annotation(time='{self.time}', msg_time='{self.msg_time}', robot='{self.robot}', host='{self.host}', label='{self.label}', message='{self.message}', tags='{self.tags}', level='{self.level}', end_time='{self.end_time}')>"""
+        return f"""<Annotation(id='{self.id}', time='{self.time}', msg_time='{self.msg_time}', robot='{self.robot}', host='{self.host}', label='{self.label}', message='{self.message}', tags='{self.tags}', level='{self.level}', end_time='{self.end_time}')>"""
 
 
 Index("idx_annotation_robot_label", Annotation.robot, Annotation.label)
@@ -89,7 +91,8 @@ class Event(Base):
         }
     }
 
-    time = Column(DateTime(timezone=True), nullable=False, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    time = Column(DateTime(timezone=True), primary_key=True, nullable=False)
     msg_time = Column(DateTime(timezone=True), nullable=True)
     robot = Column(String, nullable=False)
     host = Column(String, nullable=False)
@@ -100,7 +103,7 @@ class Event(Base):
     end_time = Column(DateTime(timezone=True), nullable=True)
 
     def __repr__(self):
-        return f"""<Event(time='{self.time}', msg_time='{self.msg_time}', robot='{self.robot}', host='{self.host}', label='{self.label}', message='{self.message}', tags='{self.tags}', level='{self.level}', end_time='{self.end_time}')>"""
+        return f"""<Event(id='{self.id}', time='{self.time}', msg_time='{self.msg_time}', robot='{self.robot}', host='{self.host}', label='{self.label}', message='{self.message}', tags='{self.tags}', level='{self.level}', end_time='{self.end_time}')>"""
 
 
 Index("idx_event_robot_label", Event.robot, Event.label)
@@ -115,7 +118,8 @@ class Heartbeat(Base):
         }
     }
 
-    time = Column(DateTime(timezone=True), nullable=False, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    time = Column(DateTime(timezone=True), primary_key=True, nullable=False)
     msg_time = Column(DateTime(timezone=True), nullable=True)
     robot = Column(String, nullable=False)
     host = Column(String, nullable=False)
@@ -126,7 +130,7 @@ class Heartbeat(Base):
     end_time = Column(DateTime(timezone=True), nullable=True)
 
     def __repr__(self):
-        return f"""<Heartbeat(time='{self.time}', msg_time='{self.msg_time}', robot='{self.robot}', host='{self.host}', label='{self.label}', message='{self.message}', tags='{self.tags}', level='{self.level}', end_time='{self.end_time}')>"""
+        return f"""<Heartbeat(id='{self.id}', time='{self.time}', msg_time='{self.msg_time}', robot='{self.robot}', host='{self.host}', label='{self.label}', message='{self.message}', tags='{self.tags}', level='{self.level}', end_time='{self.end_time}')>"""
 
 
 Index("idx_heartbeat_robot_label", Heartbeat.robot, Heartbeat.label)
@@ -141,7 +145,8 @@ class Metric(Base):
         }
     }
 
-    time = Column(DateTime(timezone=True), nullable=False, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    time = Column(DateTime(timezone=True), primary_key=True, nullable=False)
     msg_time = Column(DateTime(timezone=True), nullable=True)
     robot = Column(String, nullable=False)
     name = Column(String, nullable=False)
@@ -149,7 +154,7 @@ class Metric(Base):
     str = Column(String, nullable=True)
 
     def __repr__(self):
-        return f"""<Metric(time='{self.time}', msg_time='{self.msg_time}', robot='{self.robot}', name='{self.name}', real='{self.real}', str='{self.str}')>"""
+        return f"""<Metric(id='{self.id}', time='{self.time}', msg_time='{self.msg_time}', robot='{self.robot}', name='{self.name}', real='{self.real}', str='{self.str}')>"""
 
 
 class Parameter(Base):
@@ -161,7 +166,8 @@ class Parameter(Base):
         }
     }
 
-    time = Column(DateTime(timezone=True), nullable=False, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    time = Column(DateTime(timezone=True), primary_key=True, nullable=False)
     msg_time = Column(DateTime(timezone=True), nullable=True)
     robot = Column(String, nullable=False)
     name = Column(String, nullable=False)
@@ -169,7 +175,7 @@ class Parameter(Base):
     str = Column(String, nullable=True)
 
     def __repr__(self):
-        return f"""<Parameter(time='{self.time}', msg_time='{self.msg_time}', robot='{self.robot}', name='{self.name}', real='{self.real}', str='{self.str}')>"""
+        return f"""<Parameter(id='{self.id}', time='{self.time}', msg_time='{self.msg_time}', robot='{self.robot}', name='{self.name}', real='{self.real}', str='{self.str}')>"""
 
 
 class NodeResourceUtilization(Base):
@@ -181,7 +187,8 @@ class NodeResourceUtilization(Base):
         }
     }
 
-    time = Column(DateTime(timezone=True), nullable=False, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    time = Column(DateTime(timezone=True), primary_key=True, nullable=False)
     msg_time = Column(DateTime(timezone=True), nullable=True)
     robot = Column(String, nullable=False)
     node = Column(String, nullable=False)
@@ -194,7 +201,7 @@ class NodeResourceUtilization(Base):
     num_fds = Column(Integer, nullable=False)
 
     def __repr__(self):
-        return f"""<NodeResourceUtilization(time='{self.time}', msg_time='{self.msg_time}', robot='{self.robot}', node='{self.node}', host='{self.host}', process='{self.process}', status='{self.status}', cpu_percent='{self.cpu_percent}', memory_percent='{self.memory_percent}', num_threads='{self.num_threads}', num_fds='{self.num_fds}')>"""
+        return f"""<NodeResourceUtilization(id='{self.id}', time='{self.time}', msg_time='{self.msg_time}', robot='{self.robot}', node='{self.node}', host='{self.host}', process='{self.process}', status='{self.status}', cpu_percent='{self.cpu_percent}', memory_percent='{self.memory_percent}', num_threads='{self.num_threads}', num_fds='{self.num_fds}')>"""
 
 
 Index("idx_node_resource_utilization_robot", NodeResourceUtilization.robot)
@@ -209,7 +216,8 @@ class JointStatesActual(Base):
         }
     }
 
-    time = Column(DateTime(timezone=True), nullable=False, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    time = Column(DateTime(timezone=True), primary_key=True, nullable=False)
     msg_time = Column(DateTime(timezone=True), nullable=True)
     robot = Column(String, nullable=False)
     actuator = Column(String, nullable=False)
@@ -218,7 +226,7 @@ class JointStatesActual(Base):
     effort = Column(DOUBLE_PRECISION, nullable=False)
 
     def __repr__(self):
-        return f"""<JointStatesActual(time='{self.time}', msg_time='{self.msg_time}', robot='{self.robot}', actuator='{self.actuator}', position='{self.position}', velocity='{self.velocity}', effort='{self.effort}')>"""
+        return f"""<JointStatesActual(id='{self.id}', time='{self.time}', msg_time='{self.msg_time}', robot='{self.robot}', actuator='{self.actuator}', position='{self.position}', velocity='{self.velocity}', effort='{self.effort}')>"""
 
 
 Index("idx_joint_states_actual_robot", JointStatesActual.robot)
@@ -238,7 +246,8 @@ class JointStatesCommanded(Base):
         }
     }
 
-    time = Column(DateTime(timezone=True), nullable=False, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    time = Column(DateTime(timezone=True), primary_key=True, nullable=False)
     msg_time = Column(DateTime(timezone=True), nullable=True)
     robot = Column(String, nullable=False)
     actuator = Column(String, nullable=False)
@@ -247,7 +256,7 @@ class JointStatesCommanded(Base):
     effort = Column(DOUBLE_PRECISION, nullable=False)
 
     def __repr__(self):
-        return f"""<JointStatesCommanded(time='{self.time}', msg_time='{self.msg_time}', robot='{self.robot}', actuator='{self.actuator}', position='{self.position}', velocity='{self.velocity}', effort='{self.effort}')>"""
+        return f"""<JointStatesCommanded(id='{self.id}', time='{self.time}', msg_time='{self.msg_time}', robot='{self.robot}', actuator='{self.actuator}', position='{self.position}', velocity='{self.velocity}', effort='{self.effort}')>"""
 
 
 Index("idx_joint_states_commanded_robot", JointStatesCommanded.robot)
@@ -267,7 +276,8 @@ class ForceTorqueSensor(Base):
         }
     }
 
-    time = Column(DateTime(timezone=True), nullable=False, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    time = Column(DateTime(timezone=True), primary_key=True, nullable=False)
     msg_time = Column(DateTime(timezone=True), nullable=True)
     robot = Column(String, nullable=False)
     actuator = Column(String, nullable=False)
@@ -275,7 +285,7 @@ class ForceTorqueSensor(Base):
     torque = Column(ARRAY(DOUBLE_PRECISION), nullable=False)
 
     def __repr__(self):
-        return f"""<ForceTorqueSensor(time='{self.time}', msg_time='{self.msg_time}', robot='{self.robot}', actuator='{self.actuator}', force='{self.force}', torque='{self.torque}')>"""
+        return f"""<ForceTorqueSensor(id='{self.id}', time='{self.time}', msg_time='{self.msg_time}', robot='{self.robot}', actuator='{self.actuator}', force='{self.force}', torque='{self.torque}')>"""
 
 
 Index(
@@ -294,7 +304,8 @@ class StateTransitions(Base):
         }
     }
 
-    time = Column(DateTime(timezone=True), nullable=False, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    time = Column(DateTime(timezone=True), primary_key=True, nullable=False)
     msg_time = Column(DateTime(timezone=True), nullable=True)
     robot = Column(String, nullable=False)
     previous_state = Column(String, nullable=False)
@@ -304,7 +315,7 @@ class StateTransitions(Base):
     module = Column(String, nullable=True)
 
     def __repr__(self):
-        return f"""<StateTransitions(time='{self.time}', msg_time='{self.msg_time}', robot='{self.robot}', previous_state='{self.previous_state}', current_state='{self.current_state}', state_enum='{self.state_enum}', state_string='{self.state_string}', module='{self.module}')>"""
+        return f"""<StateTransitions(id='{self.id}', time='{self.time}', msg_time='{self.msg_time}', robot='{self.robot}', previous_state='{self.previous_state}', current_state='{self.current_state}', state_enum='{self.state_enum}', state_string='{self.state_string}', module='{self.module}')>"""
 
 
 Index(
@@ -323,7 +334,8 @@ class TopicStatistics(Base):
         }
     }
 
-    time = Column(DateTime(timezone=True), nullable=False, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    time = Column(DateTime(timezone=True), primary_key=True, nullable=False)
     msg_time = Column(DateTime(timezone=True), nullable=True)
     robot = Column(String, nullable=False)
     topic = Column(String, nullable=False)
@@ -342,7 +354,7 @@ class TopicStatistics(Base):
     stamp_age_max = Column(DOUBLE_PRECISION, nullable=False)
 
     def __repr__(self):
-        return f"""<TopicStatistics(time='{self.time}', msg_time='{self.msg_time}', robot='{self.robot}', topic='{self.topic}', node_subscriber='{self.node_subscriber}', node_publisher='{self.node_publisher}', start_time='{self.start_time}', end_time='{self.end_time}', dropped_messages='{self.dropped_messages}', delivered_messages='{self.delivered_messages}', traffic='{self.traffic}', period_mean='{self.period_mean}', period_stddev='{self.period_stddev}', period_max='{self.period_max}', stamp_age_mean='{self.stamp_age_mean}', stamp_age_stddev='{self.stamp_age_stddev}', stamp_age_max='{self.stamp_age_max}')>"""
+        return f"""<TopicStatistics(id='{self.id}', time='{self.time}', msg_time='{self.msg_time}', robot='{self.robot}', topic='{self.topic}', node_subscriber='{self.node_subscriber}', node_publisher='{self.node_publisher}', start_time='{self.start_time}', end_time='{self.end_time}', dropped_messages='{self.dropped_messages}', delivered_messages='{self.delivered_messages}', traffic='{self.traffic}', period_mean='{self.period_mean}', period_stddev='{self.period_stddev}', period_max='{self.period_max}', stamp_age_mean='{self.stamp_age_mean}', stamp_age_stddev='{self.stamp_age_stddev}', stamp_age_max='{self.stamp_age_max}')>"""
 
 
 Index("idx_topic_statistics_robot_topic", TopicStatistics.robot, TopicStatistics.topic)
@@ -357,7 +369,8 @@ class Odom(Base):
         }
     }
 
-    time = Column(DateTime(timezone=True), nullable=False, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    time = Column(DateTime(timezone=True), primary_key=True, nullable=False)
     msg_time = Column(DateTime(timezone=True), nullable=True)
     robot = Column(String, nullable=False)
     frame = Column(String, nullable=False)
@@ -366,7 +379,7 @@ class Odom(Base):
     rpy = Column(ARRAY(DOUBLE_PRECISION), nullable=False)
 
     def __repr__(self):
-        return f"""<Odom(time='{self.time}', msg_time='{self.msg_time}', robot='{self.robot}', frame='{self.frame}', position='{self.position}', orientation='{self.orientation}', rpy='{self.rpy}')>"""
+        return f"""<Odom(id='{self.id}', time='{self.time}', msg_time='{self.msg_time}', robot='{self.robot}', frame='{self.frame}', position='{self.position}', orientation='{self.orientation}', rpy='{self.rpy}')>"""
 
 
 Index("idx_odom_robot_frame", Odom.robot, Odom.frame)

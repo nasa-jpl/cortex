@@ -43,7 +43,7 @@ FILE_HEADER = f"""# Path: cortex/db/entities/<table_type>.py
 """
 
 SQLALCHEMY_IMPORT_TEMPLATE = """from sqlalchemy import Column, Integer, String, DateTime, Index, ARRAY, ForeignKey, DOUBLE_PRECISION
-from base import Base
+from cortex.db.entities import Base
 """
 
 SQLALCHEMY_TEMPLATE = """class CLASS_NAME(Base):
@@ -140,16 +140,14 @@ class CRTXTableGenerator:
     def __get_columns(self, table_config: dict, table_type: str = "hypertable"):
         # Get columns from table config
         columns = []
+        columns.append("id = Column(Integer, primary_key=True, autoincrement=True)")
 
         if table_type == "hypertable":
             # If hypertable, include the `time` and `msg_time` columns
             columns.append(
-                "time = Column(DateTime(timezone=True), nullable=False, primary_key=True)"
+                "time = Column(DateTime(timezone=True), primary_key=True, nullable=False)"
             )
             columns.append("msg_time = Column(DateTime(timezone=True), nullable=True)")
-        else:
-            # Otherwise, add an auto-incrementing primary key
-            columns.append("id = Column(Integer, primary_key=True, autoincrement=True)")
 
         # Get value of the first element in the dict (since the dict only has one element)
         table_config = table_config[list(table_config.keys())[0]]

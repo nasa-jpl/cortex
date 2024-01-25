@@ -57,6 +57,8 @@ from cortex.db.entities import *
 # etc...
 ```
 
+**See notebooks/ for usage examples** 
+
 ## Architecture
 
 CORTEX is intended to work with a wide variety of robots and configurations. It is designed to be as
