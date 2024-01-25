@@ -9,7 +9,9 @@
   received.
 ![Latest Worker](../../../../docs/agents/worker/latest.png)
 
-- `sequential`:
+- `sequential`: Only process topics once they have been received **in the specified order**. 
+If messages are received out of turn, all messages are discarded and the cycle starts over. 
+
 ![Sequential Worker](../../../../docs/agents/worker/sequential.png)
 
 ### Not Yet Implemented (coming soon)
