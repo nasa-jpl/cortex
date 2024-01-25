@@ -1,6 +1,6 @@
 @startuml
 
-title "Basic" Worker (K=3)
+title "Basic" Worker
 footer Messages are transformed and inserted immediately
 hide footbox
 skinparam BoxPadding 20
