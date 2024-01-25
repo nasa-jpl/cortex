@@ -1,0 +1,70 @@
+@startuml
+
+
+title "Sequential" Worker (K=3)
+footer Messages must be received in the order in which they were subscribed to
+
+hide footbox
+skinparam BoxPadding 20
+skinparam BoxMargin 10
+skinparam ParticipantPadding 20
+
+box ROS #LightYellow
+  entity rn as "Topic 1"
+  entity rn2 as "Topic 2"
+  entity rnN as "Topic 3"
+end box
+
+box "Worker" #LightBlue
+
+  actor wk as "Listener"
+    wk -> rn : Subscribe
+    wk -> rn2 : Subscribe
+    wk -> rnN : Subscribe
+  collections Transformer
+end box
+
+box "Python Library" #LightGreen
+  queue TemporalCRTX
+end box
+
+box Docker #SkyBlue
+  database Database
+end box
+
+
+rn -[#Green]> wk : Msg
+wk -[#Green]> wk : Cache [Msg1]
+
+rnN -[#Red]> wk: Msg
+===Invalid Sequence==
+wk -[#Red]> wk : Discard All
+
+rn -[#Green]> wk : Msg
+wk -[#Green]> wk : Cache [Msg1]
+
+rn2 -[#Green]> wk: Msg
+wk -[#Green]> wk : Cache [Msg1, Msg2]
+rnN -[#Green]> wk: Msg
+===Valid Sequence==
+
+group #pink data transformation
+  wk -> Transformer : ROS Message 1, ..., K
+  activate Transformer
+
+  Transformer -> Transformer : transform
+  return SQLAlchemy Entities
+
+  deactivate Transformer
+end
+
+group #gold insertion
+wk -> TemporalCRTX : Enqueue Entity
+end
+
+loop #DarkSalmon configurable batch time
+      TemporalCRTX -> Database : Batch Insert
+end
+
+
+@enduml

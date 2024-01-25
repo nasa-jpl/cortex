@@ -1,0 +1,49 @@
+@startuml
+
+title "Basic" Worker (K=3)
+footer Messages are transformed and inserted immediately
+hide footbox
+skinparam BoxPadding 20
+skinparam BoxMargin 10
+skinparam ParticipantPadding 20
+
+box ROS #LightYellow
+  entity rn as "Topic Publisher"
+end box
+
+box "Worker" #LightBlue
+  actor wk as "Listener"
+  collections Transformer
+end box
+
+box "Python Library" #LightGreen
+  queue TemporalCRTX
+end box
+
+box Docker #SkyBlue
+  database Database
+end box
+
+
+rn -> wk : ROS Message
+
+group #pink data transformation
+  wk -> Transformer : ROS Message
+  activate Transformer
+
+  Transformer -> Transformer : transform
+  return SQLAlchemy Entities
+
+  deactivate Transformer
+end
+
+group #gold insertion
+wk -> TemporalCRTX : Enqueue Entity
+end
+
+loop #DarkSalmon configurable batch time
+      TemporalCRTX -> Database : Batch Insert
+end
+
+
+@enduml

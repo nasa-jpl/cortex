@@ -1,0 +1,68 @@
+@startuml
+
+title "Latest" Worker (K=2)
+footer Only the latest messages are inserted, and only once all K topics have been received.
+hide footbox
+skinparam BoxPadding 20
+skinparam BoxMargin 10
+skinparam ParticipantPadding 20
+
+box ROS #LightYellow
+  entity rn as "Topic 1"
+  entity rn2 as "Topic 2"
+end box
+
+box "Worker" #LightBlue
+  actor wk as "Listener"
+  wk -> rn : Subscribe
+  wk -> rn2 : Subscribe
+  collections Transformer
+end box
+
+box "Python Library" #LightGreen
+  queue TemporalCRTX
+end box
+
+box Docker #SkyBlue
+  database Database
+end box
+
+rn -> wk : Msg 1
+wk -> wk : Wait
+
+
+rn -> wk : Msg 2
+wk -> wk : Discard Msg 1
+note right
+  Msgs from both topics must
+  be received before processing
+  (i.e. sequential)
+end note
+
+rn -> wk: Msg 3
+
+wk -> wk : Discard Msg 2
+
+rn2 -> wk: Msg 4
+wk -> wk : Process
+===Both Received==
+group #pink data transformation
+  wk -> Transformer : Msg 3, Msg 4
+  activate Transformer
+
+  Transformer -> Transformer : transform
+  return SQLAlchemy Entities
+
+  deactivate Transformer
+end
+
+group #gold insertion
+wk -> TemporalCRTX : Enqueue Entity
+end
+
+loop #DarkSalmon configurable batch time
+      TemporalCRTX -> Database : Batch Insert
+end
+
+
+@enduml
