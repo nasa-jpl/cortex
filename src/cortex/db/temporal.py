@@ -36,6 +36,7 @@ class TemporalCRTX:
         migrate: bool = False,
         database="postgres",
         logger=None,
+        logging=True,
     ):
         """This class is a wrapper around SQLAlchemy and psycopg2, and provides a
         thread-safe interface for inserting data into the database."""
@@ -43,6 +44,7 @@ class TemporalCRTX:
         self.__port = port
         self.__database = database
         self.__logger = logger
+        self.__logging = logging
         self.__url = (
             f"timescaledb+psycopg2://postgres:postgres@{hostname}:{port}/{database}"
         )
@@ -58,7 +60,7 @@ class TemporalCRTX:
         self.__queue = queue.Queue()
         self.__queue_size = 0
         self.__previous_time = time.time()
-        self.__worker_thread = threading.Thread(target=self.__worker, daemon=False)
+        self.__worker_thread = threading.Thread(target=self.__worker, daemon=True)
         self.__worker_thread.start()
 
     def get_session(self):
@@ -75,7 +77,7 @@ class TemporalCRTX:
                     self.__queue_size += 1
                 except queue.Full:
                     print(
-                        f"EELSdB: Failed to insert entity due to full queue (size={self.__queue_size})."
+                        f"TemporalCRTX: Failed to insert entity due to full queue (size={self.__queue_size})."
                     )
                     continue
             if self.__queue_size >= self.batch_size:
@@ -83,6 +85,9 @@ class TemporalCRTX:
 
     def __log_or_print(self, message, log_throttle_time=None):
         """A helper function that logs a message if ROS is running, otherwise prints it to stdout."""
+        if not self.__logging:
+            return
+
         print(f"Logging: {message}")
 
         # If a logger is provided, use it
@@ -122,10 +127,7 @@ class TemporalCRTX:
                         self.__queue_size -= 1
                         self.__queue.task_done()
                         batch.append(entity)
-
-                        self.__log_or_print(
-                            f"EELSdB: Got batch of {len(batch)} entities."
-                        )
+                    self.__log_or_print(f"TemporalCRTX: Got batch of {len(batch)} entities.")
                     if len(batch) > 0:
                         try:
                             session.add_all(batch)
@@ -133,7 +135,7 @@ class TemporalCRTX:
                             self.__previous_time = time.time()
                         except Exception as e:
                             self.__log_or_print(
-                                f"[ERROR] EELSdB: Encountered SQLAlchemy error while batch inserting data: {e}"
+                                f"[ERROR] TemporalCRTX: Encountered SQLAlchemy error while batch inserting data: {e}"
                             )
                             session.rollback()
             with self.__conditional_lock:
@@ -146,33 +148,28 @@ class TemporalCRTX:
                 if len(batch) > 0:
                     session.add_all(batch)
                     session.commit()
-        self.__log_or_print(f"[WARN] EELSdB: Worker thread exiting...")
+        self.__log_or_print(f"[WARN] TemporalCRTX: Worker thread exiting...")
 
     def shutdown(self, block=False, timeout=30.0):
         # Stop the worker thread, ensure queue is empty
-        self.__log_or_print(f"EELSdB: Shutting down...")
+        self.__log_or_print(f"TemporalCRTX: Shutting down...")
         self.__killed = True
 
-        self.__log_or_print(f"EELSdB: Getting CV lock...")
+        self.__log_or_print(f"TemporalCRTX: Getting CV lock...")
         with self.__conditional_lock:
-            self.__log_or_print(f"EELSdB: Notifying worker thread...")
+            self.__log_or_print(f"TemporalCRTX: Notifying worker thread...")
             self.__conditional_lock.notify_all()
 
-        self.__log_or_print(f"EELSdB: Joining Queue...")
+        self.__log_or_print(f"TemporalCRTX: Joining Queue...")
         self.__queue.join()
 
-        # Close the EELSdB Session
-        self.__log_or_print(f"EELSdB: Closing session...")
+        # Close the TemporalCRTX Session
+        self.__log_or_print(f"TemporalCRTX: Closing session...")
         close_all_sessions()
 
         # Close the connection to the database
-        self.__log_or_print(f"EELSdB: Disposing engine...")
+        self.__log_or_print(f"TemporalCRTX: Disposing engine...")
         self.__engine.dispose()
 
         if not block:
             sys.exit()
-
-
-if __name__ == "__main__":
-    db = TemporalCRTX()
-    db.shutdown()
