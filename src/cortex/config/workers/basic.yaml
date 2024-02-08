@@ -3,19 +3,34 @@
 - topic: /joint_states
   data_type: JointState
   msg_pkg: sensor_msgs.msg
-  hz: 5
   target: joint_states_actual
+  hz: 5
   preprocessors:
-    - flatten:
-        fields:
+    - flatten: # JointState messages contain arrays of data, we want to flatten them
+        fields: # The flatten function takes a list of fields to flatten
           - name
           - position
           - velocity
           - effort
-  transforms:
-    - time: time
-    - ros_time: ros_time
-    - actuator: name
-    - position: position
-    - velocity: velocity
-    - effort: effort
+    - rename: # JointState messages use `name` for the joint name, we want to rename it to `actuator`
+        mappings:
+            name: actuator
+
+
+###################################################
+# Resource Utilization
+- topic: /resource_monitor
+  data_type: NodeResource
+  msg_pkg: cortex.msg
+  hz: 1
+  target: resource_monitor
+  preprocessors:
+    - flatten:
+        fields:
+          - node
+          - name
+          - status
+          - cpu_percent
+          - memory_percent
+          - num_threads
+          - num_fds

@@ -27,43 +27,41 @@ class Worker:
         self.__data_type = config.data_type
         self.__msg_pkg = config.msg_pkg
         self.__hz = config.hz
-        self.__db: TemporalCRTX = config.db
         self.__transform = config.transform
         self.__global_args = config.global_args
-        self.__change_only = config.change_only
-        self.__change_field = config.change_field
+        self.__change_fields = config.change_fields
 
         self.__desired_delta = float(1 / config.hz) if config.hz is not None else None
         self.__previous_msg = None
         self.__previous_time = None
 
-    def callback(self, msg, kwargs):
+        self.__db = TemporalCRTX()
+
+    def callback(self, msg, **kwargs):
         # This callback should be called by the ROS subscriber
         if self.__should_process(msg):
             current_time = time.time()
             entities = self.__transform(msg, **self.__global_args, **kwargs)
             self.__db.insert(entities)
 
-            if self.__change_only:
+            if self.__change_fields:
                 self.__previous_msg = msg
 
             self.__previous_time = current_time
 
     def __should_process(self, msg):
-        # Note that change_only effectively overrides the behavior of desired_hz since we assume ALL changes should be processed
-        if self.__change_only:
+        # Note that any entry in change_fields effectively overrides the hz setting
+        if self.__change_fields:
             # Always process the first message
             if self.__previous_msg is None:
                 return True
 
-            if getattr(self.__previous_msg, self.__change_field) == getattr(
-                msg, self.__change_field
-            ):
-                # Do not process if change_only is enabled and the change_field has not changed
-                return False
-            else:
-                # Process if change_only is enabled and the change_field has changed
-                return True
+            for change_field in self.__change_fields:
+                # Process if any of the tracked fields have changed
+                if getattr(msg, change_field) != getattr(self.__previous_msg, change_field):
+                    return True
+            # Otherwise, if we only process on change and no changes have been detected, return False
+            return False
 
         # If desired_hz is not set, process every message
         if self.__hz is None or self.__desired_delta is None:
@@ -71,11 +69,14 @@ class Worker:
 
         # Process if the desired time delta has passed
         if (
-            self.__previous_time is not None
-            and self.__desired_delta is not None
-            and (time.time() - self.__previous_time) < self.__desired_delta
+                self.__previous_time is not None
+                and self.__desired_delta is not None
+                and (time.time() - self.__previous_time) < self.__desired_delta
         ):
             return False
 
         # Otherwise, process
         return True
+
+    def __del__(self):
+        self.__db.shutdown(block=True)

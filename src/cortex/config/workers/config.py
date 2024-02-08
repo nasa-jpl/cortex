@@ -19,17 +19,25 @@ from functools import partial
 
 class BasicWorkerConfig:
     def __init__(self, config: dict):
+        """Configuration for basic workers."""
+        # Required Args
         self.topic = config["topic"]
-        self.db = config["db"]
         self.data_type = config["data_type"]
         self.msg_pkg = config["msg_pkg"]
-        self.hz = config["hz"]
         self.target = config["target"]
-        self.transforms = config["transforms"]
+
+        # Optional Args
+        self.preprocessors = self.get_preprocessors(config.get("preprocessors", []))
+        self.transforms = config.get("transforms", [])
+        self.hz = config.get("hz", None)
+        self.change_fields = config.get("change_fields", None)
         self.global_args = config.get("global_args", {})
-        self.preprocessors = self.get_preprocessors(config["preprocessors"])
-        self.change_only = config.get("change_only", False)
-        self.change_field = config.get("change_field", None)
+
+        if self.change_fields:
+            self.hz = None
+            self.change_fields = {k: v for k, v in self.change_fields.items()}
+
+        # Class Variables
         self.target_class = self.get_target_class()
 
     def get_target_class(self):
@@ -50,6 +58,7 @@ class BasicWorkerConfig:
         return cls
 
     def get_preprocessors(self, preprocessor_config):
+        """Retrieve the preprocessor functions from cortex.db.transforms.preprocessors and apply the args to them. Return a list of partial functions to be applied to the data."""
         preprocessors = []
         for preprocessor in preprocessor_config:
             # The name is the only key in the preprocessor dict
@@ -82,11 +91,12 @@ class BasicWorkerConfig:
             rows = preprocessor(data=rows)
 
         for row in rows:
-            # Map the data fields to the target_class fields
             data = {}
-            for transform in self.transforms:
-                key, value = list(transform.items())[0]
-                data[value] = row[key]
+
+            # For all fields in the target_class, if the field is in the data, add it
+            for field in self.target_class.__table__.columns.keys():
+                if field in row:
+                    data[field] = row[field]
 
             # Add the kwargs to the data if the target_class has those fields
             for key, value in kwargs.items():
@@ -118,13 +128,9 @@ def test():
           - position
           - velocity
           - effort
-  transforms:
-    - time: time
-    - msg_time: msg_time
-    - name: actuator
-    - position: position
-    - velocity: velocity
-    - effort: effort
+    - rename:
+        mappings:
+            name: actuator
     """
 
     config = yaml.load(config_yaml, Loader=yaml.FullLoader)[0]
@@ -132,7 +138,7 @@ def test():
     # Create basic worker config object
     basic_worker_config = BasicWorkerConfig(config)
 
-    right_now = datetime.now()
+    right_now = datetime.now().isoformat()
     data = dict(
         time=right_now,
         msg_time=right_now,
@@ -146,13 +152,11 @@ def test():
 
     # Transform the flattened data into target class rows
     entities = basic_worker_config.transform(data, **global_args)
-    print(f"Entities: ")
-    print(entities)
 
     from cortex.db import TemporalCRTX
-
-    db = TemporalCRTX()
+    db = TemporalCRTX(logging=False)
     with db.get_session() as session:
         session.add_all(entities)
         session.commit()
-    print(f"Done")
+
+    db.shutdown(block=True)
