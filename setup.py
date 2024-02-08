@@ -24,14 +24,14 @@ cortex_packages = find_packages(where="src")
 print(f"Cortex packages: ", cortex_packages)
 
 setup(
-    name="jpl-neo-cortex",
+    name="jpl-cortex",
     version="1.0.0",
     license="Apache 2.0",
     platforms="Ubuntu 20.04",
     description="A framework for accelerating robotics development through a combination of modern data infrastructure, test automation, and intelligent data analysis.",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/nasa-jpl/neo-cortex",
+    url="https://github.com/nasa-jpl/cortex",
     author="Rob Royce",
     author_email="Rob.Royce@jpl.nasa.gov",
     classifiers=[
@@ -56,7 +56,7 @@ setup(
         "sqlalchemy-timescaledb==0.4.1",
     ],
     project_urls={  # Optional
-        "Bug Reports": "https://github.com/nasa-jpl/neo-cortex/issues",
-        "Source": "https://github.com/nasa-jpl/neo-cortex",
+        "Bug Reports": "https://github.com/nasa-jpl/cortex/issues",
+        "Source": "https://github.com/nasa-jpl/cortex",
     },
 )
