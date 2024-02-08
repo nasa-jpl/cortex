@@ -16,3 +16,4 @@
 #
 
 from .flatten import flatten
+from .rename import rename

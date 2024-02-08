@@ -15,5 +15,7 @@
 #  limitations under the License.
 #
 
-from .environment import *
-from .workers import *
+from .environment import CRTXEnvironment
+from .roles import CRTXRoles
+
+__all__ = ['CRTXEnvironment', 'CRTXRoles']
