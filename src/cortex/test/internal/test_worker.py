@@ -59,13 +59,13 @@ class TestBasicWorker(unittest.TestCase):
             position=[8, 9, 10, 11, 12],
             effort=[13, 14, 15, 16],
         )
-
         self.db = TemporalCRTX(logging=False)
 
     def tearDown(self):
         with self.db.get_session() as session:
             # Remove all entities with robot name "Test Robot"
             session.query(JointStatesActual).where(JointStatesActual.robot == "Test Robot").delete()
+            session.commit()
         self.db.shutdown(block=True)
 
     def test_basic_config(self):
@@ -104,7 +104,7 @@ class TestBasicWorker(unittest.TestCase):
         # Verify that the correct number of entities were created (should be 5 * 3 = 15)
         with self.db.get_session() as session:
             states = session.query(JointStatesActual).where(JointStatesActual.robot == "Test Robot").all()
-            assert len(states) == 15, "There should be 15 entities in the database."
+            assert len(states) == 15, f"There should be 15 entities in the database, not {len(states)}"
 
             # Remove them from the DB
             for state in states:

@@ -28,7 +28,7 @@ class TestMonitor(unittest.TestCase):
         self.DB_HOSTNAME = '127.0.0.1'
         self.DB_PORT = '5432'
         self.db = TemporalCRTX(self.DB_HOSTNAME, self.DB_PORT, logging=False)
-        self.robot_name = 'Test'
+        self.robot_name = 'Test Robot'
 
     def tearDown(self):
         # Delete all entries that use the test robot name
