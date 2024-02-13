@@ -12,6 +12,132 @@
         "iconColor": "rgba(0, 211, 255, 1)",
         "name": "Annotations & Alerts",
         "type": "dashboard"
+      },
+      {
+        "datasource": {
+          "type": "postgres",
+          "uid": "P49960DE5880E8C68"
+        },
+        "enable": true,
+        "iconColor": "green",
+        "mappings": {
+          "id": {
+            "source": "field",
+            "value": "id"
+          },
+          "tags": {
+            "source": "field",
+            "value": "tags"
+          },
+          "text": {
+            "source": "field",
+            "value": "text"
+          },
+          "time": {
+            "source": "field",
+            "value": "time"
+          },
+          "timeEnd": {
+            "source": "field",
+            "value": "end_time"
+          },
+          "title": {
+            "source": "field",
+            "value": "label"
+          }
+        },
+        "name": "Successful Tests",
+        "target": {
+          "editorMode": "code",
+          "format": "table",
+          "limit": 100,
+          "matchAny": false,
+          "rawQuery": true,
+          "rawSql": "SELECT id, time, end_time, label, message as \"text\", REGEXP_REPLACE(tags::text, '[\\{\\}]', '', 'g') as tags FROM ts_annotation\nWHERE tags::text LIKE '%SUCCESS%';",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
+          "tags": [],
+          "type": "dashboard"
+        }
+      },
+      {
+        "datasource": {
+          "type": "postgres",
+          "uid": "P49960DE5880E8C68"
+        },
+        "enable": true,
+        "iconColor": "red",
+        "mappings": {
+          "id": {
+            "source": "field",
+            "value": "id"
+          },
+          "tags": {
+            "source": "field",
+            "value": "tags"
+          },
+          "text": {
+            "source": "field",
+            "value": "text"
+          },
+          "time": {
+            "source": "field",
+            "value": "time"
+          },
+          "timeEnd": {
+            "source": "field",
+            "value": "end_time"
+          },
+          "title": {
+            "source": "field",
+            "value": "label"
+          }
+        },
+        "name": "Failed Tests",
+        "target": {
+          "editorMode": "code",
+          "format": "table",
+          "limit": 100,
+          "matchAny": false,
+          "rawQuery": true,
+          "rawSql": "SELECT time, end_time, label, message as \"text\", REGEXP_REPLACE(tags::text, '[\\{\\}]', '', 'g') as tags FROM ts_annotation\nWHERE tags::text NOT LIKE '%SUCCESS%';",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
+          "tags": [],
+          "type": "dashboard"
+        }
       }
     ]
   },
@@ -41,27 +167,220 @@
           "showLineNumbers": false,
           "showMiniMap": false
         },
-        "content": "# Welcome to CORTEX for Robotics!\n\nThis is an example dashboard to help you get started.\n\n",
+        "content": "# CORTEX Dashboard\n\nThis dashboard provides a centralized location for all-things CORTEX.",
         "mode": "markdown"
       },
       "pluginVersion": "10.2.0",
       "type": "text"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "P49960DE5880E8C68"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "shades"
+          },
+          "custom": {
+            "fillOpacity": 7,
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineWidth": 1,
+            "spanNulls": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "#EAB839",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 24,
+        "x": 0,
+        "y": 4
+      },
+      "id": 2,
+      "options": {
+        "alignValue": "left",
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "mergeValues": true,
+        "rowHeight": 1,
+        "showValue": "auto",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "10.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "P49960DE5880E8C68"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  time,\n  label\nFROM\n  ts_annotation\nWHERE $__timeFilter(time);",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [
+                  {
+                    "name": "label",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              },
+              {
+                "parameters": [
+                  {
+                    "name": "\"time\"",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
+          "table": "ts_annotation"
+        }
+      ],
+      "title": "Test Timeline",
+      "transformations": [],
+      "type": "state-timeline"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "P49960DE5880E8C68"
+      },
+      "gridPos": {
+        "h": 20,
+        "w": 24,
+        "x": 0,
+        "y": 8
+      },
+      "id": 3,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": false
+      },
+      "pluginVersion": "10.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "P49960DE5880E8C68"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  label,\n  level,\n  time,\n  robot,\n  host,\n  message,\n  REGEXP_REPLACE(tags::text, '[\\{\\}]', '', 'g') as tags,\n  end_time,\n  (end_time - time) as duration\nFROM\n  ts_annotation\nWHERE\n  $__timeFilter(time)\nORDER BY\n  time DESC\nLIMIT\n  100;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [
+                  {
+                    "name": "*",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
+          "table": "ts_annotation"
+        }
+      ],
+      "title": "Test Logs",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {
+              "duration": 2,
+              "end_time": 8,
+              "host": 5,
+              "label": 0,
+              "level": 1,
+              "message": 6,
+              "robot": 4,
+              "tags": 7,
+              "time": 3
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "type": "logs"
     }
   ],
-  "refresh": "",
+  "refresh": "5s",
   "schemaVersion": 38,
   "tags": [],
   "templating": {
     "list": []
   },
   "time": {
-    "from": "now-6h",
+    "from": "now-15m",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "CORTEX",
   "uid": "bd8bedf7-7c79-4883-af04-baddbeb0586d",
-  "version": 1,
+  "version": 23,
   "weekStart": ""
 }

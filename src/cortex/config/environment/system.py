@@ -29,7 +29,7 @@ class SystemEnvironment:
         self.RUN_START_TIME = datetime.datetime.now().isoformat()
         self.RUN_LABEL = 'default'
         self.RUN_DESCRIPTION = ''
-        self.ROBOT = 'Test'
+        self.ROBOT = 'Test Robot'
 
     """A method to retrieve environment variables from the system (e.g. os.environ, etc.)"""
     @staticmethod

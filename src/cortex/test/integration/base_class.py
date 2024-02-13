@@ -14,13 +14,20 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import unittest
 
-from .cortex_tests import CRTXTest, CRTXTestRunner, CRTXTestResult
-from .node_stats import NodeStats
 
-__all__ = [
-    'NodeStats',
-    'CRTXTest',
-    'CRTXTestRunner',
-    'CRTXTestResult'
-]
+class IntegrationBase(unittest.TestSuite):
+    test_name = None
+
+    def __init__(self):
+        super(IntegrationBase, self).__init__()
+
+    def run(self, result, debug=False):
+        print("Running integration test: " + self.test_name)
+        super(IntegrationBase, self).run(result, debug)
+        return result
+
+    def __init_subclass__(cls, **kwargs):
+        if not getattr(cls, 'test_name', None):
+            raise AttributeError("[IntegrationBase]: derived classes must specify a test_name attribute.")

@@ -36,7 +36,7 @@ class TemporalCRTX:
         migrate: bool = False,
         database="postgres",
         logger=None,
-        logging=True,
+        logging=False,
     ):
         """This class is a wrapper around SQLAlchemy and psycopg2, and provides a
         thread-safe interface for inserting data into the database."""
@@ -150,7 +150,7 @@ class TemporalCRTX:
                     session.commit()
         self.__log_or_print(f"[WARN] TemporalCRTX: Worker thread exiting...")
 
-    def shutdown(self, block=False, timeout=30.0):
+    def shutdown(self, block=True, timeout=30.0):
         # Stop the worker thread, ensure queue is empty
         self.__log_or_print(f"TemporalCRTX: Shutting down...")
         self.__killed = True
@@ -165,11 +165,21 @@ class TemporalCRTX:
 
         # Close the TemporalCRTX Session
         self.__log_or_print(f"TemporalCRTX: Closing session...")
-        close_all_sessions()
+
+        try:
+            close_all_sessions()
+        except Exception as e:
+            self.__log_or_print(f"TemporalCRTX: Failed to close all sessions: {e}")
 
         # Close the connection to the database
         self.__log_or_print(f"TemporalCRTX: Disposing engine...")
         self.__engine.dispose()
 
         if not block:
+            # Wait for timeout seconds then exit
+            time.sleep(timeout)
             sys.exit()
+
+    def __del__(self):
+        if not self.__killed:
+            self.shutdown(block=True)

@@ -137,7 +137,6 @@ class Monitor:
             # Any nodes that have terminated should be removed from the list of nodes to monitor
             for stat in stats:
                 if stat.pid == -1 or stat.status == "terminated":
-                    print(f"Removing node {stat.name} from monitor list.")
                     self.remove_node(stat.name)
 
             time.sleep(self.__period)

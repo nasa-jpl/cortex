@@ -15,12 +15,19 @@
 #  limitations under the License.
 #
 
-from .cortex_tests import CRTXTest, CRTXTestRunner, CRTXTestResult
-from .node_stats import NodeStats
 
-__all__ = [
-    'NodeStats',
-    'CRTXTest',
-    'CRTXTestRunner',
-    'CRTXTestResult'
-]
+import unittest
+
+
+class TestCommands(unittest.TestCase):
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        pass
+
+    def test_move_forward(self):
+        pass
+
+    def test_move_backward(self):
+        pass
