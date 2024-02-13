@@ -14,5 +14,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from .worker import Worker
+from .annotator import Annotator, AnnotationLevel, AnnotationTags
 from .monitor import Monitor
+from .worker import Worker
