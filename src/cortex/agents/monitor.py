@@ -124,12 +124,20 @@ class Monitor:
             delay (int, optional): The number of seconds to wait before shutting down the database. Defaults to 3.
         """
         self.__running = False
-        self.__collect_stats_thread.join()
-        time.sleep(delay)
         self.__db.shutdown(block=True)
+        self.__collect_stats_thread.join(delay)
+        if self.__collect_stats_thread.is_alive():
+            sys.exit()
+        self.__collect_stats_thread = None
 
     def __collect_stats(self):
         while self.__running:
+            self.__next_update += self.__period
+
+            if not self.__should_process:
+                time.sleep(self.__next_update - time.time())
+                continue
+
             stats = self.get_stats()
             entities = [NodeMonitor.to_entity(stat, self.__robot, self.__hostname) for stat in stats]
             self.__db.insert(entities)
@@ -139,7 +147,7 @@ class Monitor:
                 if stat.pid == -1 or stat.status == "terminated":
                     self.remove_node(stat.name)
 
-            time.sleep(self.__period)
+            time.sleep(self.__next_update - time.time())
 
     def add_node(self, pid: int, name: str):
         """Add a node to the list of nodes to monitor. The node is identified by its PID and name.
