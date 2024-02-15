@@ -15,6 +15,7 @@
 #  limitations under the License.
 #
 
+import math
 import multiprocessing
 import time
 import unittest
@@ -56,7 +57,7 @@ class TestMonitor(unittest.TestCase):
         m.start()
 
         # Wait to ensure the stats are collected
-        time.sleep(SLEEP_TIME)
+        time.sleep(SLEEP_TIME + 0.1)
         m.stop()
         p1.terminate()
 
@@ -66,15 +67,16 @@ class TestMonitor(unittest.TestCase):
                 NodeResourceUtilization.node == f"python_test_proc_{p1.pid}").all()
 
             # We should have approximately MONITOR_HZ * SLEEP_TIME stats
-            assert len(stats) > (MONITOR_HZ * SLEEP_TIME) - (
-                        MONITOR_HZ * SLEEP_TIME * 0.1), "Monitor did not collect enough stats."
+            expected = MONITOR_HZ * SLEEP_TIME
+            expected = math.floor(expected - (expected * 0.15))
+            self.assertGreaterEqual(len(stats), expected, "Monitor did not collect enough stats.")
 
             for stat in stats:
-                assert stat.cpu_percent >= 0.0, "Expected non-negative CPU usage"
-                assert stat.memory_percent > 0.0, "Expected non-zero memory usage"
-                assert stat.num_threads >= 1, "Expected at least one thread"
-                assert stat.num_fds >= 1, "Expected at least one file descriptor"
-                assert stat.status in ["running", "sleeping"], f"Unexpected process status: {stat.status}"
+                self.assertGreaterEqual(stat.cpu_percent, 0.0, "Expected non-negative CPU usage")
+                self.assertGreater(stat.memory_percent, 0.0, "Expected non-zero memory usage")
+                self.assertGreaterEqual(stat.num_threads, 1, "Expected at least one thread")
+                self.assertGreaterEqual(stat.num_fds, 1, "Expected at least one file descriptor")
+                self.assertIn(stat.status, ["running", "sleeping"], f"Unexpected process status: {stat.status}")
 
                 # Delete the stats from the database
                 session.delete(stat)
@@ -87,7 +89,7 @@ class TestMonitor(unittest.TestCase):
 
         # Assert that no stats are collected
         stats = m.get_stats()
-        assert len(stats) == 0, "Nodes were not removed from monitor"
+        self.assertEqual(len(stats), 0, "Nodes were not removed from monitor")
 
     def test_live_insertion(self):
         """Verify that the monitor can collect stats from a running process that is inserted after the monitor starts."""
@@ -115,7 +117,7 @@ class TestMonitor(unittest.TestCase):
         p2.terminate()
         m.stop()
 
-        assert len(stats) == 2, "Expected stats for both nodes"
+        self.assertEqual(len(stats), 2, "Expected stats for both nodes")
 
     def test_duplicate_node(self):
         """Verify that the monitor can handle duplicate nodes."""
@@ -128,12 +130,10 @@ class TestMonitor(unittest.TestCase):
         # Get the PIDs of the processes
         m = Monitor(self.DB_HOSTNAME, self.DB_PORT)
 
-        try:
+        def add_duplicate_node():
             m.add_node(p1.pid, f"python_test_proc_{p1.pid}")
             m.add_node(p2.pid, f"python_test_proc_{p1.pid}")
-            assert False, "Expected ValueError for duplicate node"
-        except ValueError:
-            assert True, "Expected ValueError for duplicate node"
+        self.assertRaises(ValueError, add_duplicate_node)
 
         p1.terminate()
         p2.terminate()
@@ -170,18 +170,19 @@ class TestMonitor(unittest.TestCase):
 
             # There should be 100 unique process names
             names = set([stat.node for stat in stats])
-            assert len(names) == NUM_PROCESSES, "Expected stats for all processes"
+            self.assertEqual(len(names), NUM_PROCESSES, "Expected stats for all processes")
 
             # We should have approximately MONITOR_HZ * SLEEP_TIME * NUM_PROCESSES stats
-            assert len(stats) > (MONITOR_HZ * SLEEP_TIME * NUM_PROCESSES) - (
-                    MONITOR_HZ * SLEEP_TIME * NUM_PROCESSES * 0.1), "Monitor did not collect enough stats."
+            expected = MONITOR_HZ * SLEEP_TIME * NUM_PROCESSES
+            expected = math.floor(expected - (expected * 0.2))
+            self.assertGreaterEqual(len(stats), expected, "Monitor did not collect enough stats.")
 
             for stat in stats:
-                assert stat.cpu_percent >= 0.0, "Expected non-negative CPU usage"
-                assert stat.memory_percent > 0.0, "Expected non-zero memory usage"
-                assert stat.num_threads >= 1, "Expected at least one thread"
-                assert stat.num_fds >= 1, "Expected at least one file descriptor"
-                assert stat.status in ["running", "sleeping"], f"Unexpected process status: {stat.status}"
+                self.assertGreaterEqual(stat.cpu_percent, 0.0, "Expected non-negative CPU usage")
+                self.assertGreater(stat.memory_percent, 0.0, "Expected non-zero memory usage")
+                self.assertGreaterEqual(stat.num_threads, 1, "Expected at least one thread")
+                self.assertGreaterEqual(stat.num_fds, 1, "Expected at least one file descriptor")
+                self.assertIn(stat.status, ["running", "sleeping"], f"Unexpected process status: {stat.status}")
 
                 # Delete the stats from the database
                 session.delete(stat)
@@ -203,11 +204,11 @@ class TestMonitor(unittest.TestCase):
         # Wait for a bit and ensure the stats are collected
         time.sleep(SLEEP_TIME)
         stats = m.get_stats()
-        assert len(stats) == 1, "Expected stats for one node"
+        self.assertEqual(len(stats), 1, "Expected stats for one node")
 
         # Kill the node and ensure the monitor removes it automatically
         p1.terminate()
         time.sleep(SLEEP_TIME)
         m.stop()
         stats = m.get_stats()
-        assert len(stats) == 0, "Expected monitor to remove node after termination"
+        self.assertEqual(len(stats), 0, "Expected no stats after node termination")

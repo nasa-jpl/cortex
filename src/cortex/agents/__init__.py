@@ -15,5 +15,9 @@
 #  limitations under the License.
 
 from .annotator import Annotator, AnnotationLevel, AnnotationTags
+from .commander import Commander
 from .monitor import Monitor
+from .observer import Observer
 from .worker import Worker
+
+__all__ = ['Annotator', 'AnnotationLevel', 'AnnotationTags', 'Commander', 'Monitor', 'Observer', 'Worker']

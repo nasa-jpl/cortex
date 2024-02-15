@@ -73,18 +73,18 @@ class TestBasicWorker(unittest.TestCase):
 
         # Transform the flattened data into target class rows
         entities = self.config.transform(self.data, **self.global_args)
-        assert len(entities) == 3, "Flattening should have created 3 entities."
+        self.assertEqual(len(entities), 3, "Flattening should have created 3 entities.")
 
         # Verify that the entities are in the correct format
         for i in range(3):
             entity = entities[i]
-            assert entity.robot == "Test Robot", "Robot name should be Test Robot"
-            assert entity.time == self.right_now, f"time should be {self.right_now}"
-            assert entity.msg_time == self.right_now, f"msg_time should be {self.right_now}"
-            assert entity.actuator == self.data.get("name")[i], f"actuator should be {self.data.get('name')[i]}"
-            assert entity.velocity == self.data.get("velocity")[i], f"velocity should be {self.data.get('velocity')[i]}"
-            assert entity.position == self.data.get("position")[i], f"position should be {self.data.get('position')[i]}"
-            assert entity.effort == self.data.get("effort")[i], f"effort should be {self.data.get('effort')[i]}"
+            self.assertEqual(entity.robot, "Test Robot", "Robot name should be Test Robot")
+            self.assertEqual(entity.time, self.right_now, f"time should be {self.right_now}")
+            self.assertEqual(entity.msg_time, self.right_now, f"msg_time should be {self.right_now}")
+            self.assertEqual(entity.actuator, self.data.get("name")[i], f"actuator should be {self.data.get('name')[i]}")
+            self.assertEqual(entity.velocity, self.data.get("velocity")[i], f"velocity should be {self.data.get('velocity')[i]}")
+            self.assertEqual(entity.position, self.data.get("position")[i], f"position should be {self.data.get('position')[i]}")
+            self.assertEqual(entity.effort, self.data.get("effort")[i], f"effort should be {self.data.get('effort')[i]}")
 
     def test_basic_worker_sample_rate(self):
         """Verify that the basic worker can be created and that it obeys the specified sample rate."""
@@ -104,7 +104,7 @@ class TestBasicWorker(unittest.TestCase):
         # Verify that the correct number of entities were created (should be 5 * 3 = 15)
         with self.db.get_session() as session:
             states = session.query(JointStatesActual).where(JointStatesActual.robot == "Test Robot").all()
-            assert len(states) == 15, f"There should be 15 entities in the database, not {len(states)}"
+            self.assertEqual(len(states), 15, "There should be 15 entities in the database.")
 
             # Remove them from the DB
             for state in states:
@@ -125,7 +125,7 @@ class TestBasicWorker(unittest.TestCase):
         # Since the data was sent faster than the sample rate, there should only be 3 entities
         with self.db.get_session() as session:
             states = session.query(JointStatesActual).where(JointStatesActual.robot == "Test Robot").all()
-            assert len(states) == 3, "There should be 3 entities in the database."
+            self.assertEqual(len(states), 3, "There should be 3 entities in the database.")
 
             # Remove them from the DB
             for state in states:

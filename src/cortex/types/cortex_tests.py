@@ -91,9 +91,8 @@ class CRTXTestResult(unittest.TextTestResult):
         super(CRTXTestResult, self).addFailure(test, err)
 
     def startTest(self, test):
-        # self.test.id = getattr(test, '_testMethodName', None)
         test_path = test.id().split('.')
-        self.test.id = f"{test_path[-2]}.{test_path[-1]}"
+        self.test.id = f"{test_path[2].upper()}: {test_path[-2]}.{test_path[-1]}()"
         self.test.desc = test.shortDescription()
         self.test.start = datetime.now()
         super().startTest(test)
@@ -116,6 +115,8 @@ class CRTXTestResult(unittest.TextTestResult):
 
         level = 'INFO' if test.status == 'SUCCESS' else 'ERROR'
         message = test.desc if test.status == 'SUCCESS' else f"[Reason: {test.failure}]\n{test.desc}"
+        if message is None:
+            message = f"Test description not specified in the {test.id} docstring."
 
         annotation = Annotation(
             time=test.start,

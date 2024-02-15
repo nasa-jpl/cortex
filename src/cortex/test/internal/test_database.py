@@ -30,7 +30,7 @@ class TestTemporalCRTX(unittest.TestCase):
     def test_connection(self):
         """Make sure we can connect to the database"""
         temporal = TemporalCRTX(logging=False)
-        assert temporal is not None
+        self.assertIsNotNone(temporal)
         temporal.shutdown(block=True)
 
     def test_insertion(self):
@@ -46,13 +46,13 @@ class TestTemporalCRTX(unittest.TestCase):
         # Verify that it was inserted then delete it
         with temporal.get_session() as session:
             r = session.query(Robot).filter_by(name='R2D2').first()
-            assert r is not None
+            self.assertIsNotNone(r)
             session.delete(r)
             session.commit()
 
         # Verify that it was deleted by trying to query again
         with temporal.get_session() as session:
             r = session.query(Robot).filter_by(name='R2D2').first()
-            assert r is None
+            self.assertIsNone(r)
 
         temporal.shutdown(block=True)

@@ -17,10 +17,12 @@
 
 from .cortex_tests import CRTXTest, CRTXTestRunner, CRTXTestResult
 from .node_stats import NodeStats
+from .robot_state import RobotState
 
 __all__ = [
     'NodeStats',
     'CRTXTest',
     'CRTXTestRunner',
-    'CRTXTestResult'
+    'CRTXTestResult',
+    'RobotState'
 ]

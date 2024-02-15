@@ -15,14 +15,12 @@
 #  limitations under the License.
 #
 
-
-import unittest
-from cortex.types import CRTXTestResult, CRTXTestRunner
-from cortex.test.integration import IntegrationBase
+from cortex.types import CRTXTestRunner
+from cortex.test.integration import CRTXIntegrationTest
 from cortex.test.internal import TestTemporalCRTX, TestEnvironment, TestBasicWorker, TestMonitor
 
 
-class TestCORTEX(IntegrationBase):
+class TestCORTEX(CRTXIntegrationTest):
     test_name = "CORTEX Integration Test"
 
     def __init__(self):

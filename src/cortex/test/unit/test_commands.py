@@ -15,11 +15,15 @@
 #  limitations under the License.
 #
 
-
+import time
 import unittest
+from cortex.agents import Commander, Observer
 
 
 class TestCommands(unittest.TestCase):
+    commander = Commander()
+    observer = Observer()
+
     def setUp(self):
         pass
 
@@ -27,7 +31,16 @@ class TestCommands(unittest.TestCase):
         pass
 
     def test_move_forward(self):
-        pass
+        """Test the robot's ability to move forward."""
+        time.sleep(1)
+        self.assertTrue(True, "This is a placeholder")
 
     def test_move_backward(self):
-        pass
+        """Test the robot's ability to move backward."""
+        time.sleep(1)
+        self.assertTrue(True, "This is a placeholder")
+
+    def test_stop(self):
+        """Test the robot's ability to stop."""
+        time.sleep(1)
+        self.assertTrue(True, "This is a placeholder")

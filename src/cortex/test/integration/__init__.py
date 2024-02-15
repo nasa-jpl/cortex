@@ -15,6 +15,6 @@
 #  limitations under the License.
 #
 
-from .base_class import IntegrationBase
+from .base_class import CRTXIntegrationTest
 from .test_cortex import TestCORTEX
 from .test_ros1 import TestROS1

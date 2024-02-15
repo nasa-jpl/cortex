@@ -15,19 +15,20 @@
 #  limitations under the License.
 #
 
+from cortex.types import CRTXTestRunner
+from cortex.test.integration import CRTXIntegrationTest
+from cortex.test.unit import TestCommands
 
-import unittest
-from cortex.test.units import TestCommands
 
-
-class TestROS1(unittest.TestSuite):
+class TestROS1(CRTXIntegrationTest):
     def __init__(self):
         super(TestROS1, self).__init__()
         self.addTest(TestCommands('test_move_forward'))
+        self.addTest(TestCommands('test_stop'))
         self.addTest(TestCommands('test_move_backward'))
+        self.addTest(TestCommands('test_stop'))
 
-    def run(self, result, debug=False):
-        super(TestROS1, self).run(result, debug)
-        if result.errors or result.failures:
-            raise Exception("ROS integration test failed")
-        return result
+
+if __name__ == '__main__':
+    result = CRTXTestRunner().run(TestROS1())
+    print(result)
