@@ -4,7 +4,7 @@
   data_type: JointState
   msg_pkg: sensor_msgs.msg
   target: joint_states_actual
-  hz: 5
+  hz: 3
   preprocessors:
     - flatten: # JointState messages contain arrays of data, we want to flatten them
         fields: # The flatten function takes a list of fields to flatten
@@ -16,21 +16,44 @@
         mappings:
             name: actuator
 
+- topic: /desired_joint_states
+  data_type: JointState
+  msg_pkg: sensor_msgs.msg
+  target: joint_states_commanded
+  hz: 3
+  preprocessors:
+    - flatten: # JointState messages contain arrays of data, we want to flatten them
+        fields: # The flatten function takes a list of fields to flatten
+          - name
+          - position
+          - velocity
+          - effort
+    - rename: # JointState messages use `name` for the joint name, we want to rename it to `actuator`
+        mappings:
+            name: actuator
 
 ###################################################
-# Resource Utilization
-- topic: /resource_monitor
-  data_type: NodeResource
-  msg_pkg: cortex.msg
-  hz: 1
-  target: resource_monitor
+# Statistics, Metrics, and Diagnostics
+- topic: /statistics
+  data_type: TopicStatistics
+  msg_pkg: rosgraph_msgs.msg
+  target: topic_statistics
   preprocessors:
-    - flatten:
+    - rename:
+        mappings:
+          node_pub: node_publisher
+          node_sub: node_subscriber
+          window_start: start_time
+          window_stop: end_time
+          dropped_msgs: dropped_messages
+          delivered_msgs: delivered_messages
+    - parse_timestamps:
         fields:
-          - node
-          - name
-          - status
-          - cpu_percent
-          - memory_percent
-          - num_threads
-          - num_fds
+          - start_time
+          - end_time
+          - period_mean
+          - period_stddev
+          - period_max
+          - stamp_age_mean
+          - stamp_age_stddev
+          - stamp_age_max

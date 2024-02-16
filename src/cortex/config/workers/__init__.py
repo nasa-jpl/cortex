@@ -15,4 +15,30 @@
 #  limitations under the License.
 #
 
+import os
+import yaml
+
 from .config import *
+
+WORKER_CONFIG_PATH = os.path.dirname(__file__)
+
+
+class WorkerConfig:
+    """A class to read and store worker configurations from a YAML file."""
+
+    @staticmethod
+    def get_basic_worker_config(global_args=None):
+        config = WorkerConfig.get_config("basic")
+        if global_args:
+            for cfg in config:
+                cfg["global_args"] = global_args
+        return config
+
+    @staticmethod
+    def get_config(config_type: str):
+        # Get config_type.yaml file path
+        config_file = os.path.join(WORKER_CONFIG_PATH, config_type + ".yaml")
+        print(f"Config file: {config_file}")
+        # Read the file
+        with open(config_file, "r") as file:
+            return yaml.safe_load(file)

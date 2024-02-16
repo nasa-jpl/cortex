@@ -17,19 +17,28 @@
 #
 
 import rospy
-from cortex.agents import Worker
+import typing
+from cortex.config.environment import CRTXEnvironment
+from cortex.config.workers import WorkerConfig, BasicWorkerConfig
+from cortex.agents import CRTXWorker
 
 
 def main():
     # Use CRTX launch file to set node name and namespace
-    rospy.init_node('~')
+    rospy.init_node("~worker")
 
     # Parse YAML file for a list of worker configurations
-    # Instantiate a worker for each configuration using the Worker.callback method as the callback
-    # Start the workers
-    # Keep running until ROS tells us to stop
+    env = CRTXEnvironment.local()
+    global_args = dict(robot=env.system.ROBOT, host=env.device.HOSTNAME)
+    workers: typing.List[CRTXWorker] = []
+
+    for config in WorkerConfig.get_basic_worker_config(global_args):
+        worker = CRTXWorker(BasicWorkerConfig(config))
+        rospy.Subscriber(worker.topic, worker.data_class, worker.callback, queue_size=1)
+        workers.append(worker)
+
     rospy.spin()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -14,43 +14,47 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+import typing
 
-def flatten(fields, data):
+
+def flatten(fields, data: typing.List[dict]):
     # Assumes that the data is an object with multiple arrays
-    # e.g. data = {a: [1,2,3], b: [4,5,6,7], c: [8,9,10,11]}
+    # e.g. data = [ {a: [1,2,3], b: [4,5,6,7], c: [8,9,10,11]} ]
     # The fields parameter is a list of the fields to flatten
     # e.g. fields = ['a', 'b']
     # The result will be a list of objects with the flattened fields, whose length is the length of the shortest field
     # e.g. result = [{a: 1, b: 4}, {a: 2, b: 5}, {a: 3, b: 6}]
 
-    # Get the length of the shortest field to ensure that we don't go out of bounds
-    length = min([len(data[field]) for field in fields])
+    results = []
+    for d in data:
+        # Get the length of the shortest field to ensure that we don't go out of bounds
+        length = min([len(d[field]) for field in fields])
 
-    # Get a list of fields that are not lists and not in the fields list
-    other_fields = [
-        field
-        for field in data.keys()
-        if field not in fields and not isinstance(data[field], list)
-    ]
+        # Get a list of fields that are not lists and not in the fields list
+        keys = d.keys()
+        other_fields = [
+            field
+            for field in keys
+            if field not in fields and not isinstance(d[field], list)
+        ]
 
-    result = []
-    for i in range(length):
-        obj = {}
+        for i in range(length):
+            obj = {}
 
-        # Add the other fields to the object
-        for field in other_fields:
-            obj[field] = data[field]
+            # Add the other fields to the object
+            for field in other_fields:
+                obj[field] = d[field]
 
-        for field in fields:
-            obj[field] = data[field][i]
-        result.append(obj)
-    return result
+            for field in fields:
+                obj[field] = d[field][i]
+            results.append(obj)
+    return results
 
 
 def test():
     data = dict(a=[1, 2, 3, 4], b=[4, 5, 6], c=[7, 8, 9, 10])
     fields = ["a", "b"]
-    result = flatten(fields, data)
+    result = flatten(fields, [data])
 
     # Assert that the result is correct
     assert result == [dict(a=1, b=4), dict(a=2, b=5), dict(a=3, b=6)]

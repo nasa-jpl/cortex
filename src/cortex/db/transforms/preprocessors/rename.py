@@ -35,16 +35,24 @@ def rename(mappings: dict, data: typing.List[dict]):
 
 def test():
     rows = [
-        dict(name='joint_bend_01', pos=-.03, velocity=0.0, effort=0.0),
-        dict(name='joint_bend_02', pos=0.532, velocity=0.0, effort=0.0),
+        dict(name="joint_bend_01", pos=-0.03, velocity=0.0, effort=0.0),
+        dict(name="joint_bend_02", pos=0.532, velocity=0.0, effort=0.0),
         dict(velocity=1.0),
-        dict(actuator='joint_bend_02', pos=0.532, velocity=0.0, effort=0.0, torque=0.43),
+        dict(
+            actuator="joint_bend_02", pos=0.532, velocity=0.0, effort=0.0, torque=0.43
+        ),
     ]
-    mappings = {'name': 'actuator', 'pos': 'position'}
+    mappings = {"name": "actuator", "pos": "position"}
     result = rename(mappings, rows)
     assert result == [
-        dict(actuator='joint_bend_01', position=-.03, velocity=0.0, effort=0.0),
-        dict(actuator='joint_bend_02', position=0.532, velocity=0.0, effort=0.0),
+        dict(actuator="joint_bend_01", position=-0.03, velocity=0.0, effort=0.0),
+        dict(actuator="joint_bend_02", position=0.532, velocity=0.0, effort=0.0),
         dict(velocity=1.0),
-        dict(actuator='joint_bend_02', position=0.532, velocity=0.0, effort=0.0, torque=0.43),
+        dict(
+            actuator="joint_bend_02",
+            position=0.532,
+            velocity=0.0,
+            effort=0.0,
+            torque=0.43,
+        ),
     ]

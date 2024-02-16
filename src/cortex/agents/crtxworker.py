@@ -14,14 +14,14 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-
 import time
 import typing
+from datetime import datetime
 from cortex.db import TemporalCRTX
 from cortex.config.workers import *
 
 
-class Worker:
+class CRTXWorker:
     def __init__(self, config: typing.Union[BasicWorkerConfig]):
         self.__topic = config.topic
         self.__data_type = config.data_type
@@ -37,16 +37,38 @@ class Worker:
 
         self.__db = TemporalCRTX()
 
+    @property
+    def topic(self):
+        return self.__topic
+
+    @property
+    def data_class(self):
+        # Get the package msg_pkg
+        msg_pkg = __import__(self.__msg_pkg, fromlist=[self.__data_type])
+        return getattr(msg_pkg, self.__data_type)
+
     def callback(self, msg, **kwargs):
         # This callback should be called by the ROS subscriber
         if self.__should_process(msg):
             current_time = time.time()
+
+            if hasattr(msg, "__slots__") and "header" in msg.__slots__:
+                # ROS1 message
+                msg_time = datetime.fromtimestamp(msg.header.stamp.to_sec())
+            else:
+                # No header
+                msg_time = datetime.fromtimestamp(current_time)
+
+            kwargs.update(
+                {"time": datetime.fromtimestamp(current_time), "msg_time": msg_time}
+            )
+
+            # Transform the message and insert it into the database
             entities = self.__transform(msg, **self.__global_args, **kwargs)
             self.__db.insert(entities)
 
             if self.__change_fields:
                 self.__previous_msg = msg
-
             self.__previous_time = current_time
 
     def __should_process(self, msg):
@@ -82,3 +104,6 @@ class Worker:
 
     def __del__(self):
         self.__db.shutdown(block=True)
+
+    def __repr__(self):
+        return f"CRTXWorker(topic={self.__topic}, data_type={self.__data_type}, msg_pkg={self.__msg_pkg}, hz={self.__hz}, change_fields={self.__change_fields}, global_args={self.__global_args})"

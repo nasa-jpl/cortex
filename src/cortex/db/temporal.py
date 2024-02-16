@@ -142,8 +142,7 @@ class TemporalCRTX:
                 with self.__conditional_lock:
                     # Wait for the batch size or timeout to be reached
                     self.__conditional_lock.wait_for(
-                        self.__should_work,
-                        self.__next_update_delay
+                        self.__should_work, self.__next_update_delay
                     )
                     self.__next_update_delay = max(0.0, time.time() - start_time)
 
@@ -155,7 +154,9 @@ class TemporalCRTX:
                         self.__queue.task_done()
                         batch.append(entity)
 
-                    self.__log_or_print(f"TemporalCRTX: Got batch of {len(batch)} entities.")
+                    self.__log_or_print(
+                        f"TemporalCRTX: Got batch of {len(batch)} entities."
+                    )
 
                     if len(batch) > 0:
                         try:

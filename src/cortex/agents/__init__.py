@@ -18,6 +18,14 @@ from .annotator import Annotator, AnnotationLevel, AnnotationTags
 from .commander import Commander
 from .monitor import Monitor
 from .observer import Observer
-from .worker import Worker
+from .crtxworker import CRTXWorker
 
-__all__ = ['Annotator', 'AnnotationLevel', 'AnnotationTags', 'Commander', 'Monitor', 'Observer', 'Worker']
+__all__ = [
+    "Annotator",
+    "AnnotationLevel",
+    "AnnotationTags",
+    "Commander",
+    "Monitor",
+    "Observer",
+    "CRTXWorker",
+]
