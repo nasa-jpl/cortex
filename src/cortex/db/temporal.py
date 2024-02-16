@@ -55,6 +55,7 @@ class TemporalCRTX:
 
         self.batch_size: int = batch_size
         self.batch_timeout = batch_timeout
+        self.__next_update_delay = 0
         self.__conditional_lock = threading.Condition()
         self.__killed = False
         self.__queue = queue.Queue()
@@ -66,6 +67,17 @@ class TemporalCRTX:
     def get_session(self):
         session = self.__session()
         return session
+
+    def delete(self, query, _filter):
+        """Delete data from the database matching the given query and filter.
+
+        :param query: The entity (table) to delete from (e.g. 'DataProduct')
+        :param _filter: The filter to apply to the query (e.g. 'DataProduct.id == 1')
+        """
+        with self.get_session() as session:
+            data = session.query(query).filter(_filter)
+            data.delete()
+            session.commit()
 
     def insert(self, data):
         if not isinstance(data, list):
@@ -83,12 +95,16 @@ class TemporalCRTX:
             if self.__queue_size >= self.batch_size:
                 self.__conditional_lock.notify()
 
+    def query(self, _query, _filter):
+        """A convenience method for querying the database."""
+        with self.get_session() as session:
+            data = session.query(_query).filter(_filter).all()
+            return data
+
     def __log_or_print(self, message, log_throttle_time=None):
         """A helper function that logs a message if ROS is running, otherwise prints it to stdout."""
         if not self.__logging:
             return
-
-        print(f"Logging: {message}")
 
         # If a logger is provided, use it
         if self.__logger:
@@ -115,19 +131,32 @@ class TemporalCRTX:
 
     def __worker(self):
         """Worker thread, periodically checks for new data in the queue and inserts it into the database in batches."""
+
+        # Use the same session throughout the worker thread lifetime
         with self.get_session() as session:
+
+            # Main loop, run until killed
             while not self.__killed:
+                start_time = time.time()
+
                 with self.__conditional_lock:
+                    # Wait for the batch size or timeout to be reached
                     self.__conditional_lock.wait_for(
-                        self.__should_work, self.batch_timeout
+                        self.__should_work,
+                        self.__next_update_delay
                     )
+                    self.__next_update_delay = max(0.0, time.time() - start_time)
+
                     batch = []
+
                     while self.__queue_size > 0:
                         entity = self.__queue.get()
                         self.__queue_size -= 1
                         self.__queue.task_done()
                         batch.append(entity)
+
                     self.__log_or_print(f"TemporalCRTX: Got batch of {len(batch)} entities.")
+
                     if len(batch) > 0:
                         try:
                             session.add_all(batch)
@@ -138,6 +167,8 @@ class TemporalCRTX:
                                 f"[ERROR] TemporalCRTX: Encountered SQLAlchemy error while batch inserting data: {e}"
                             )
                             session.rollback()
+
+            # Insert any remaining data in the queue before exiting
             with self.__conditional_lock:
                 batch = []
                 while self.__queue_size > 0:
@@ -148,6 +179,7 @@ class TemporalCRTX:
                 if len(batch) > 0:
                     session.add_all(batch)
                     session.commit()
+
         self.__log_or_print(f"[WARN] TemporalCRTX: Worker thread exiting...")
 
     def shutdown(self, block=True, timeout=30.0):
