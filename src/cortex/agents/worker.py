@@ -58,7 +58,9 @@ class Worker:
 
             for change_field in self.__change_fields:
                 # Process if any of the tracked fields have changed
-                if getattr(msg, change_field) != getattr(self.__previous_msg, change_field):
+                if getattr(msg, change_field) != getattr(
+                    self.__previous_msg, change_field
+                ):
                     return True
             # Otherwise, if we only process on change and no changes have been detected, return False
             return False
@@ -69,9 +71,9 @@ class Worker:
 
         # Process if the desired time delta has passed
         if (
-                self.__previous_time is not None
-                and self.__desired_delta is not None
-                and (time.time() - self.__previous_time) < self.__desired_delta
+            self.__previous_time is not None
+            and self.__desired_delta is not None
+            and (time.time() - self.__previous_time) < self.__desired_delta
         ):
             return False
 
