@@ -1,0 +1,20 @@
+<launch>
+    <group ns="CORTEX">
+        <node name="monitor"
+                  pkg="cortex"
+                  type="monitor.py"
+                  respawn="true"
+                  respawn_delay="5"
+                  output="screen" >
+            <param name="monitor_hz" type="double" value="$(arg monitor_hz)" />
+        </node>
+
+        <node name="worker"
+                  pkg="cortex"
+                  type="worker.py"
+                  respawn="false"
+                  respawn_delay="5"
+                  output="screen" >
+        </node>
+    </group>
+</launch>

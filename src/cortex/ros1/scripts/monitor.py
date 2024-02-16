@@ -17,34 +17,28 @@
 #  limitations under the License.
 #
 
-import rospy
-import time
 from cortex.agents import Monitor
-from cortex.config import CRTXEnvironment
-from cortex.utils import ROS1Utils
+from cortex.utils import ROS1Utils, CacheUtils
 
-
-def cache_ttl(seconds=10):
-    """A function used to calculate the cache time-to-live hash."""
-    return round(time.time() / seconds)
+import rospy
 
 
 def main():
-    # Use CRTX launch file to set node name and namespace
-    rospy.init_node("monitor")
+    rospy.init_node("~")
+    hz = rospy.get_param("~monitor_hz", 1.0)
 
-    env = CRTXEnvironment.local()
-    monitor = Monitor(env.system.DB_HOSTNAME, env.system.DB_PORT)
+    rospy.loginfo(f"Starting node monitor at {hz} Hz")
+    monitor = Monitor(hz=hz)
 
-    utils = ROS1Utils()
-    pids = utils.get_node_pids(ttl_hash=cache_ttl())
+    # Get an initial list of ROS nodes and their PIDs
+    pids = ROS1Utils.get_node_pids(hash=CacheUtils.expire_by_ttl())
     for node, pid in pids.items():
         monitor.add_node(pid, node)
     monitor.start()
 
     while not rospy.is_shutdown():
         try:
-            new_pids = utils.get_node_pids(ttl_hash=cache_ttl())
+            new_pids = ROS1Utils.get_node_pids(hash=CacheUtils.expire_by_ttl())
         except ConnectionRefusedError:
             break
 
@@ -53,7 +47,9 @@ def main():
         removed = pids.keys() - new_pids.keys()
 
         if added or removed:
-            print(f"Detecting changes in nodes: {added} {removed}")
+            rospy.loginfo(
+                f"Detecting changes in nodes... ({len(added)} added, {len(removed)} removed)"
+            )
             for node in added:
                 try:
                     monitor.add_node(new_pids[node], node)
@@ -64,7 +60,7 @@ def main():
                 monitor.remove_node(node)
 
         pids = new_pids
-        time.sleep(0.5)
+        rospy.sleep(0.5)
 
     if monitor.is_running:
         monitor.stop()

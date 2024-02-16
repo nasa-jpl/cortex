@@ -14,22 +14,24 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-import psutil
-import multiprocessing
 import datetime
+import psutil
 import threading
 import typing
 import time
+import sys
+from contextlib import contextmanager
 from cortex.config import CRTXEnvironment
-from cortex.types import NodeStats
 from cortex.db import TemporalCRTX
 from cortex.db.entities import NodeResourceUtilization
+from cortex.types import NodeStats
 
 
 class NodeMonitor:
     def __init__(self, pid: int, name: str):
         self.__pid = pid
         self.__name = name
+        self.__process = psutil.Process(pid)
 
     @property
     def pid(self):
@@ -42,16 +44,15 @@ class NodeMonitor:
     @property
     def stats(self) -> NodeStats:
         try:
-            process = psutil.Process(self.__pid)
-            with process.oneshot():
+            with self.__process.oneshot():
                 node_stats = NodeStats(
                     self.__name,
                     self.__pid,
-                    process.status(),
-                    process.cpu_percent(),
-                    process.memory_percent(),
-                    process.num_threads(),
-                    process.num_fds()
+                    self.__process.status(),
+                    self.__process.cpu_percent(),
+                    self.__process.memory_percent(),
+                    self.__process.num_threads(),
+                    self.__process.num_fds(),
                 )
         except:
             node_stats = NodeStats(self.__name, -1, "terminated", -1, -1, -1, -1)
@@ -59,28 +60,26 @@ class NodeMonitor:
 
     @staticmethod
     def to_entity(stats: NodeStats, robot, host) -> NodeResourceUtilization:
-        msg_time = datetime.datetime.now().isoformat()
+        msg_time = datetime.datetime.now()
         entity = NodeResourceUtilization(
-            time = msg_time,
-            msg_time = msg_time,
-            robot = robot,
-            node = stats.name,
-            host = host,
-            process = stats.name,
-            status = stats.status,
-            cpu_percent = stats.cpu_percent,
-            memory_percent = stats.memory_percent,
-            num_threads = stats.num_threads,
-            num_fds = stats.num_fds
+            time=msg_time,
+            msg_time=msg_time,
+            robot=robot,
+            node=stats.name,
+            host=host,
+            process=stats.name,
+            status=stats.status,
+            cpu_percent=stats.cpu_percent,
+            memory_percent=stats.memory_percent,
+            num_threads=stats.num_threads,
+            num_fds=stats.num_fds,
         )
         return entity
 
     def __repr__(self):
-        return f"<NodeMonitor(pid={self.__pid}, name={self.__name}, stats={self.stats})>"
-
-
-def get_proc_stats(monitor: NodeMonitor):
-    return monitor.stats
+        return (
+            f"<NodeMonitor(pid={self.__pid}, name={self.__name}, stats={self.stats})>"
+        )
 
 
 class Monitor:
@@ -91,22 +90,24 @@ class Monitor:
     must provide the pids of the nodes to monitor. See cortex.ros1 and cortex.ros2 for distro-specific implementations.
     """
 
-    def __init__(self, db_hostname, db_port, hz=None):
+    def __init__(self, db_hostname=None, db_port=None, hz=None):
         env = CRTXEnvironment.local()
-        self.__db_hostname = db_hostname
-        self.__db_port = db_port
+        self.__db_hostname = db_hostname if db_hostname else env.system.DB_HOSTNAME
+        self.__db_port = db_port if db_port else env.system.DB_PORT
         self.__hostname = env.device.HOSTNAME
         self.__hz = hz if hz else env.system.MONITOR_HZ
         self.__robot = env.system.ROBOT
         self.__period = 1.0 / float(self.__hz)
         self.__node_monitors = []
 
+        self.__next_update = time.time()
+
         # Use threading to start a thread to collect stats at the given frequency and publish them to the database
         self.__running = True
         self.__collect_stats_thread = threading.Thread(target=self.__collect_stats)
         self.__lock = threading.Lock()
 
-        self.__db = TemporalCRTX(self.__db_hostname, self.__db_port, logging=False)
+        self.__db = TemporalCRTX(self.__db_hostname, self.__db_port)
 
     @property
     def is_running(self):
@@ -124,22 +125,27 @@ class Monitor:
             delay (int, optional): The number of seconds to wait before shutting down the database. Defaults to 3.
         """
         self.__running = False
-        self.__db.shutdown(block=True)
-        self.__collect_stats_thread.join(delay)
+
+        time.sleep(delay)
+
+        if self.__collect_stats_thread.is_alive():
+            self.__collect_stats_thread.join(delay)
+
         if self.__collect_stats_thread.is_alive():
             sys.exit()
+
         self.__collect_stats_thread = None
+        self.__db.shutdown(block=True)
 
     def __collect_stats(self):
         while self.__running:
             self.__next_update += self.__period
 
-            if not self.__should_process:
-                time.sleep(self.__next_update - time.time())
-                continue
-
             stats = self.get_stats()
-            entities = [NodeMonitor.to_entity(stat, self.__robot, self.__hostname) for stat in stats]
+            entities = [
+                NodeMonitor.to_entity(stat, self.__robot, self.__hostname)
+                for stat in stats
+            ]
             self.__db.insert(entities)
 
             # Any nodes that have terminated should be removed from the list of nodes to monitor
@@ -147,7 +153,7 @@ class Monitor:
                 if stat.pid == -1 or stat.status == "terminated":
                     self.remove_node(stat.name)
 
-            time.sleep(self.__next_update - time.time())
+            time.sleep(max(0.0, self.__next_update - time.time()))
 
     def add_node(self, pid: int, name: str):
         """Add a node to the list of nodes to monitor. The node is identified by its PID and name.
@@ -173,7 +179,7 @@ class Monitor:
             raise ValueError("Invalid PID")
 
         # If the node name already exists, throw an error
-        found = [f for f in filter(lambda x : x.name == name, self.__node_monitors)]
+        found = [f for f in filter(lambda x: x.name == name, self.__node_monitors)]
         if len(found) > 0:
             raise ValueError(f"Node ({name}) already exists")
 
@@ -187,8 +193,7 @@ class Monitor:
             return []
 
         self.__lock.acquire()
-        with multiprocessing.Pool(processes=len(self.__node_monitors)) as pool:
-            stats = pool.map(get_proc_stats, self.__node_monitors)
+        stats = [n.stats for n in self.__node_monitors]
         self.__lock.release()
 
         return stats
@@ -196,5 +201,16 @@ class Monitor:
     def remove_node(self, name: str):
         """Remove a node from the list of monitored nodes. The node is identified by its name."""
         self.__lock.acquire()
-        self.__node_monitors = [n for n in filter(lambda x : x.name != name, self.__node_monitors)]
+        for node in self.__node_monitors:
+            if node.name == name:
+                self.__node_monitors.remove(node)
         self.__lock.release()
+
+    @staticmethod
+    @contextmanager
+    def at_rate(hz=1):
+        """A context manager to run a Monitor at a given rate. This is useful for running a Monitor in a with statement."""
+        m = Monitor(hz=hz)
+        yield m
+        if m.is_running:
+            m.stop(delay=10)
