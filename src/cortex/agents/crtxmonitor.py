@@ -82,7 +82,7 @@ class NodeMonitor:
         )
 
 
-class Monitor:
+class CRTXMonitor:
     """
     The Monitor class is used to monitor the resource utilization of ROS nodes running on a given host.
 
@@ -210,7 +210,7 @@ class Monitor:
     @contextmanager
     def at_rate(hz=1):
         """A context manager to run a Monitor at a given rate. This is useful for running a Monitor in a with statement."""
-        m = Monitor(hz=hz)
+        m = CRTXMonitor(hz=hz)
         yield m
         if m.is_running:
             m.stop(delay=10)

@@ -14,18 +14,18 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from .annotator import Annotator, AnnotationLevel, AnnotationTags
-from .commander import Commander
-from .monitor import Monitor
-from .observer import Observer
+from .crtxannotator import CRTXAnnotator, AnnotationLevel, AnnotationTags
+from .crtxcommander import CRTXCommander
+from .crtxmonitor import CRTXMonitor
+from .crtxobserver import CRTXObserver
 from .crtxworker import CRTXWorker
 
 __all__ = [
-    "Annotator",
+    "CRTXAnnotator",
     "AnnotationLevel",
     "AnnotationTags",
-    "Commander",
-    "Monitor",
-    "Observer",
+    "CRTXCommander",
+    "CRTXMonitor",
+    "CRTXObserver",
     "CRTXWorker",
 ]

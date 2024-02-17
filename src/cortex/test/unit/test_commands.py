@@ -17,12 +17,12 @@
 
 import time
 import unittest
-from cortex.agents import Commander, Observer
+from cortex.agents import CRTXCommander, CRTXObserver
 
 
 class TestCommands(unittest.TestCase):
-    commander = Commander()
-    observer = Observer()
+    commander = CRTXCommander()
+    observer = CRTXObserver()
 
     def setUp(self):
         pass

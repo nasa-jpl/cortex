@@ -17,7 +17,12 @@
 
 from cortex.types import CRTXTestRunner
 from cortex.test.integration import CRTXIntegrationTest
-from cortex.test.internal import TestTemporalCRTX, TestEnvironment, TestBasicWorker, TestMonitor
+from cortex.test.internal import (
+    TestCRTXDatabase,
+    TestCRTXEnvironment,
+    TestBasicCRTXWorker,
+    TestCRTXMonitor,
+)
 
 
 class TestCORTEX(CRTXIntegrationTest):
@@ -27,26 +32,26 @@ class TestCORTEX(CRTXIntegrationTest):
         super(TestCORTEX, self).__init__()
 
         # Environment Tests
-        self.addTest(TestEnvironment('test_local_defaults'))
-        self.addTest(TestEnvironment('test_local_modifications'))
-        self.addTest(TestEnvironment('test_key_values'))
+        self.addTest(TestCRTXEnvironment("test_local_defaults"))
+        self.addTest(TestCRTXEnvironment("test_local_modifications"))
+        self.addTest(TestCRTXEnvironment("test_key_values"))
 
         # Database Tests
-        self.addTest(TestTemporalCRTX('test_connection'))
-        self.addTest(TestTemporalCRTX('test_insertion'))
+        self.addTest(TestCRTXDatabase("test_connection"))
+        self.addTest(TestCRTXDatabase("test_insertion"))
 
         # Worker Tests
-        self.addTest(TestBasicWorker('test_basic_config'))
-        self.addTest(TestBasicWorker('test_basic_worker_sample_rate'))
+        self.addTest(TestBasicCRTXWorker("test_basic_config"))
+        self.addTest(TestBasicCRTXWorker("test_basic_worker_sample_rate"))
 
         # Monitor Tests
-        self.addTest(TestMonitor('test_nominal_monitor'))
-        self.addTest(TestMonitor('test_live_insertion'))
-        self.addTest(TestMonitor('test_duplicate_node'))
-        self.addTest(TestMonitor('test_throughput'))
-        self.addTest(TestMonitor('test_killed_process'))
+        self.addTest(TestCRTXMonitor("test_nominal_monitor"))
+        self.addTest(TestCRTXMonitor("test_live_insertion"))
+        self.addTest(TestCRTXMonitor("test_duplicate_node"))
+        self.addTest(TestCRTXMonitor("test_throughput"))
+        self.addTest(TestCRTXMonitor("test_killed_process"))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     result = CRTXTestRunner().run(TestCORTEX())
     print(result)

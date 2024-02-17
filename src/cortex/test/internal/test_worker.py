@@ -25,7 +25,7 @@ from cortex.config import BasicWorkerConfig
 from cortex.agents import CRTXWorker
 
 
-class TestBasicWorker(unittest.TestCase):
+class TestBasicCRTXWorker(unittest.TestCase):
     def setUp(self):
         config_yaml = """
         - topic: /joint_states
@@ -126,20 +126,13 @@ class TestBasicWorker(unittest.TestCase):
         time.sleep(2)
 
         # Verify that the correct number of entities were created (should be 5 * 3 = 15)
-        with self.db.get_session() as session:
-            states = (
-                session.query(JointStatesActual)
-                .where(JointStatesActual.robot == "Test Robot")
-                .all()
-            )
-            self.assertEqual(
-                len(states), 15, "There should be 15 entities in the database."
-            )
-
-            # Remove them from the DB
-            for state in states:
-                session.delete(state)
-            session.commit()
+        states = self.db.query(
+            JointStatesActual, JointStatesActual.robot == "Test Robot"
+        )
+        self.assertEqual(
+            len(states), 15, "There should be 15 entities in the database."
+        )
+        self.db.delete(JointStatesActual, JointStatesActual.robot == "Test Robot")
 
         # Now let's do it again, but this time we will send them immediately (hence there should only be 3 entities)
         for i in range(5):
@@ -153,17 +146,8 @@ class TestBasicWorker(unittest.TestCase):
         time.sleep(2)
 
         # Since the data was sent faster than the sample rate, there should only be 3 entities
-        with self.db.get_session() as session:
-            states = (
-                session.query(JointStatesActual)
-                .where(JointStatesActual.robot == "Test Robot")
-                .all()
-            )
-            self.assertEqual(
-                len(states), 3, "There should be 3 entities in the database."
-            )
-
-            # Remove them from the DB
-            for state in states:
-                session.delete(state)
-            session.commit()
+        states = self.db.query(
+            JointStatesActual, JointStatesActual.robot == "Test Robot"
+        )
+        self.assertEqual(len(states), 3, "There should be 3 entities in the database.")
+        self.db.delete(JointStatesActual, JointStatesActual.robot == "Test Robot")

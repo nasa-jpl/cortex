@@ -20,7 +20,7 @@ from cortex.db import TemporalCRTX
 from cortex.db.entities import Robot
 
 
-class TestTemporalCRTX(unittest.TestCase):
+class TestCRTXDatabase(unittest.TestCase):
     def setUp(self):
         pass
 
@@ -36,23 +36,24 @@ class TestTemporalCRTX(unittest.TestCase):
     def test_insertion(self):
         """Make sure we can insert a record into the database"""
         temporal = TemporalCRTX(batch_timeout=0.5, logging=False)
-        robot = Robot(name='R2D2', description='Astromech droid')
+        robot = Robot(name="R2D2", description="Astromech droid")
         temporal.insert(robot)
 
         # Wait a few seconds for insertion
         import time
+
         time.sleep(2)
 
         # Verify that it was inserted then delete it
         with temporal.get_session() as session:
-            r = session.query(Robot).filter_by(name='R2D2').first()
+            r = session.query(Robot).filter_by(name="R2D2").first()
             self.assertIsNotNone(r)
             session.delete(r)
             session.commit()
 
         # Verify that it was deleted by trying to query again
         with temporal.get_session() as session:
-            r = session.query(Robot).filter_by(name='R2D2').first()
+            r = session.query(Robot).filter_by(name="R2D2").first()
             self.assertIsNone(r)
 
         temporal.shutdown(block=True)

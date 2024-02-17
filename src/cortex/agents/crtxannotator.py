@@ -22,6 +22,7 @@ from cortex.db.entities import Annotation
 
 class AnnotationLevel(enum.Enum):
     """Enumeration of the different levels of annotations."""
+
     INFO = "INFO"
     WARNING = "WARNING"
     ERROR = "ERROR"
@@ -30,6 +31,7 @@ class AnnotationLevel(enum.Enum):
 
 class AnnotationTags(enum.Enum):
     """Enumeration of the different tags that can be used for annotations."""
+
     USER = "USER"
     SYSTEM = "SYSTEM"
     STATE = "STATE"
@@ -43,14 +45,22 @@ class AnnotationTags(enum.Enum):
     RUN = "RUN"
 
 
-class Annotator:
+class CRTXAnnotator:
     """CORTEX agent for adding annotations to the database."""
 
     def __init__(self, host, robot):
         self.host = host
         self.robot = robot
 
-    def annotate(self, start_time: datetime, msg_time: datetime, label: str, message: str, tags: list = None, level: AnnotationLevel = AnnotationLevel.INFO):
+    def annotate(
+        self,
+        start_time: datetime,
+        msg_time: datetime,
+        label: str,
+        message: str,
+        tags: list = None,
+        level: AnnotationLevel = AnnotationLevel.INFO,
+    ):
         """Annotate data with a label and message using now() as the time. Optionally, add tags and a level."""
         annotation = Annotation(
             time=datetime.datetime.now().isoformat(),
@@ -60,11 +70,17 @@ class Annotator:
             label=label,
             message=message,
             tags=tags,
-            level=level.value
+            level=level.value,
         )
         return annotation
 
-    def now_annotation(self, label: str, message: str, tags: list = None, level: AnnotationLevel = AnnotationLevel.INFO):
+    def now_annotation(
+        self,
+        label: str,
+        message: str,
+        tags: list = None,
+        level: AnnotationLevel = AnnotationLevel.INFO,
+    ):
         """Annotate data with a label and message using now() as the time. Optionally, add tags and a level."""
         label_time = datetime.datetime.now().isoformat()
         annotation = Annotation(
@@ -73,11 +89,20 @@ class Annotator:
             label=label,
             message=message,
             tags=tags,
-            level=level.value
+            level=level.value,
         )
         return annotation
 
-    def ranged_annotation(self, start_time: datetime, msg_time: datetime, end_time: datetime, label: str, message: str, tags: list = None, level: AnnotationLevel = AnnotationLevel.INFO):
+    def ranged_annotation(
+        self,
+        start_time: datetime,
+        msg_time: datetime,
+        end_time: datetime,
+        label: str,
+        message: str,
+        tags: list = None,
+        level: AnnotationLevel = AnnotationLevel.INFO,
+    ):
         """Annotate data with a label and message using now() as the time. Optionally, add tags and a level."""
         annotation = Annotation(
             time=start_time,
@@ -86,7 +111,7 @@ class Annotator:
             message=message,
             tags=tags,
             level=level.value,
-            end_time=end_time
+            end_time=end_time,
         )
         return annotation
 

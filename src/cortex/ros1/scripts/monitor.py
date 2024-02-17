@@ -17,7 +17,7 @@
 #  limitations under the License.
 #
 
-from cortex.agents import Monitor
+from cortex.agents import CRTXMonitor
 from cortex.utils import ROS1Utils, CacheUtils
 
 import rospy
@@ -28,7 +28,7 @@ def main():
     hz = rospy.get_param("~monitor_hz", 1.0)
 
     rospy.loginfo(f"Starting node monitor at {hz} Hz")
-    monitor = Monitor(hz=hz)
+    monitor = CRTXMonitor(hz=hz)
 
     # Get an initial list of ROS nodes and their PIDs
     pids = ROS1Utils.get_node_pids(hash=CacheUtils.expire_by_ttl())

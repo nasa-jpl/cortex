@@ -14,7 +14,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from .test_environment import TestEnvironment
-from .test_database import TestTemporalCRTX
-from .test_worker import TestBasicWorker
-from .test_monitor import TestMonitor
+from .test_environment import TestCRTXEnvironment
+from .test_database import TestCRTXDatabase
+from .test_worker import TestBasicCRTXWorker
+from .test_monitor import TestCRTXMonitor

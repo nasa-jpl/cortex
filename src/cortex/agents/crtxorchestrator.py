@@ -16,15 +16,15 @@
 #
 
 
-class Orchestrator:
+class CRTXOrchestrator:
     def __init__(self):
         pass
 
 
 def main():
-    orchestrator = Orchestrator()
+    orchestrator = CRTXOrchestrator()
     print(orchestrator)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

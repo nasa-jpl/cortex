@@ -19,27 +19,28 @@ import math
 import multiprocessing
 import time
 import unittest
-from cortex.agents import Monitor
+from cortex.agents import CRTXMonitor
 from cortex.db import TemporalCRTX
 from cortex.db.entities import NodeResourceUtilization
 
 
-class TestMonitor(unittest.TestCase):
+class TestCRTXMonitor(unittest.TestCase):
     def setUp(self):
-        self.DB_HOSTNAME = '127.0.0.1'
-        self.DB_PORT = '5432'
-        self.robot_name = 'Test Robot'
-        self.db = TemporalCRTX(self.DB_HOSTNAME, self.DB_PORT, batch_timeout=1, logging=False)
+        self.DB_HOSTNAME = "127.0.0.1"
+        self.DB_PORT = "5432"
+        self.robot_name = "Test Robot"
+        self.db = TemporalCRTX(
+            self.DB_HOSTNAME, self.DB_PORT, batch_timeout=1, logging=False
+        )
 
     def tearDown(self):
         # Delete all entries that use the test robot name
         self.db.delete(
-            NodeResourceUtilization,
-            NodeResourceUtilization.robot == self.robot_name
+            NodeResourceUtilization, NodeResourceUtilization.robot == self.robot_name
         )
         self.db.delete(
             NodeResourceUtilization,
-            NodeResourceUtilization.node.like(f"python_test_proc%")
+            NodeResourceUtilization.node.like(f"python_test_proc%"),
         )
         self.db.shutdown(block=True)
 
@@ -68,7 +69,7 @@ class TestMonitor(unittest.TestCase):
         p1 = self.create_processes(count=1, start=True)[0]
 
         # Assumes that the database is running locally. If not, change the IP address and port number accordingly
-        with Monitor.at_rate(monitor_hz) as m:
+        with CRTXMonitor.at_rate(monitor_hz) as m:
             m.add_node(p1.pid, f"python_test_proc_{p1.pid}")
             m.start()
             time.sleep(sleep_time)
@@ -77,25 +78,37 @@ class TestMonitor(unittest.TestCase):
         # Retrieve stats from the database in the last 5 seconds
         stats = self.db.query(
             NodeResourceUtilization,
-            NodeResourceUtilization.node == f"python_test_proc_{p1.pid}"
+            NodeResourceUtilization.node == f"python_test_proc_{p1.pid}",
         )
 
         # We should have approximately MONITOR_HZ * SLEEP_TIME stats
         expected = monitor_hz * sleep_time
         expected = math.floor(expected)
-        self.assertGreaterEqual(len(stats), expected, "Monitor did not collect enough stats.")
+        self.assertGreaterEqual(
+            len(stats), expected, "Monitor did not collect enough stats."
+        )
 
         # Verify that the stats are valid
         for stat in stats:
-            self.assertGreaterEqual(stat.cpu_percent, 0.0, "Expected non-negative CPU usage")
-            self.assertGreater(stat.memory_percent, 0.0, "Expected non-zero memory usage")
+            self.assertGreaterEqual(
+                stat.cpu_percent, 0.0, "Expected non-negative CPU usage"
+            )
+            self.assertGreater(
+                stat.memory_percent, 0.0, "Expected non-zero memory usage"
+            )
             self.assertGreaterEqual(stat.num_threads, 1, "Expected at least one thread")
-            self.assertGreaterEqual(stat.num_fds, 1, "Expected at least one file descriptor")
-            self.assertIn(stat.status, ["running", "sleeping"], f"Unexpected process status: {stat.status}")
+            self.assertGreaterEqual(
+                stat.num_fds, 1, "Expected at least one file descriptor"
+            )
+            self.assertIn(
+                stat.status,
+                ["running", "sleeping"],
+                f"Unexpected process status: {stat.status}",
+            )
 
     def test_live_insertion(self):
         """Verify that the monitor can collect stats from a running process that is inserted after the monitor starts."""
-        with Monitor.at_rate(0.5) as m:
+        with CRTXMonitor.at_rate(0.5) as m:
             with self.processes(2) as procs:
                 m.add_node(procs[0].pid, f"python_test_proc_{procs[0].pid}")
                 m.start()
@@ -111,11 +124,13 @@ class TestMonitor(unittest.TestCase):
 
     def test_duplicate_node(self):
         """Verify that the monitor correctly rejects duplicate nodes."""
-        with Monitor.at_rate(1) as m:
+        with CRTXMonitor.at_rate(1) as m:
             with self.processes(2) as procs:
+
                 def add_duplicate_node():
                     m.add_node(procs[0].pid, f"python_test_proc_{procs[0].pid}")
                     m.add_node(procs[1].pid, f"python_test_proc_{procs[0].pid}")
+
                 self.assertRaises(ValueError, add_duplicate_node)
 
     def test_throughput(self):
@@ -124,7 +139,7 @@ class TestMonitor(unittest.TestCase):
         monitor_hz = 1
         sleep_time = 5
 
-        with Monitor.at_rate(monitor_hz) as m:
+        with CRTXMonitor.at_rate(monitor_hz) as m:
             with self.processes(n_procs) as procs:
                 for p in procs:
                     m.add_node(p.pid, f"python_test_proc_{p.pid}")
@@ -132,27 +147,37 @@ class TestMonitor(unittest.TestCase):
                 time.sleep(sleep_time)
 
         stats = self.db.query(
-            NodeResourceUtilization,
-            NodeResourceUtilization.robot == self.robot_name
+            NodeResourceUtilization, NodeResourceUtilization.robot == self.robot_name
         )
         names = set([stat.node for stat in stats])
         self.assertEqual(len(names), n_procs, "Expected stats for all processes")
 
         expected = monitor_hz * sleep_time * n_procs
-        expected = math.floor(expected - (expected * 0.15))
-        self.assertGreaterEqual(len(stats), expected, "Monitor did not collect enough stats.")
+        self.assertGreaterEqual(
+            len(stats), expected, "Monitor did not collect enough stats."
+        )
 
         for stat in stats:
-            self.assertGreaterEqual(stat.cpu_percent, 0.0, "Expected non-negative CPU usage")
-            self.assertGreater(stat.memory_percent, 0.0, "Expected non-zero memory usage")
+            self.assertGreaterEqual(
+                stat.cpu_percent, 0.0, "Expected non-negative CPU usage"
+            )
+            self.assertGreater(
+                stat.memory_percent, 0.0, "Expected non-zero memory usage"
+            )
             self.assertGreaterEqual(stat.num_threads, 1, "Expected at least one thread")
-            self.assertGreaterEqual(stat.num_fds, 1, "Expected at least one file descriptor")
-            self.assertIn(stat.status, ["running", "sleeping"], f"Unexpected process status: {stat.status}")
+            self.assertGreaterEqual(
+                stat.num_fds, 1, "Expected at least one file descriptor"
+            )
+            self.assertIn(
+                stat.status,
+                ["running", "sleeping"],
+                f"Unexpected process status: {stat.status}",
+            )
 
     def test_killed_process(self):
         """Verify that the monitor properly handles terminated nodes."""
         sleep_time = 2
-        with Monitor.at_rate(1) as m:
+        with CRTXMonitor.at_rate(1) as m:
             with self.processes(1) as procs:
                 m.add_node(procs[0].pid, f"python_test_proc_{procs[0].pid}")
                 m.start()
