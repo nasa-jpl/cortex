@@ -24,6 +24,14 @@ services:
     network_mode: ${DOCKER_NETWORK_MODE}
     env_file:
       - .env
+    environment:
+      - PGTZ=${TZ}
+      - PGHOSTNAME=${DB_HOSTNAME}
+      - PGPORT=${DB_PORT}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+      - TIMESCALEDB_TELEMETRY=off
     volumes:
       - ${PERSISTENCE_DIRECTORY}/cortex/timescaledb:/home/postgres/pgdata/data
       - ${TIMESCALE_CONFIG}/init:/docker-entrypoint-initdb.d:ro
@@ -48,6 +56,14 @@ services:
     network_mode: ${DOCKER_NETWORK_MODE}
     env_file:
       - .env
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=
+      - GF_SERVER_HOSTNAME=${GRAFANA_HOSTNAME}
+      - GF_SERVER_HTTP_PORT=${GRAFANA_PORT}
+      - GF_PATHS_CONFIG=/etc/grafana/grafana.ini
+      - POSTGRES_USER=${DB_USER}
     volumes:
       - ${PERSISTENCE_DIRECTORY}/cortex/grafana:/var/lib/grafana
       - ${GRAFANA_CONFIG}/provisioning:/etc/grafana/provisioning

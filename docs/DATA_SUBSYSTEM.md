@@ -1,1 +1,0 @@
-# CORTEX Data Management Subsystem

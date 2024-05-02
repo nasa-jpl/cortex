@@ -20,8 +20,24 @@ import unittest
 from datetime import datetime
 
 
+class CRTXIntegrationTest(unittest.TestSuite):
+    """
+    A base classed used to define integration tests in the CORTEX framework.
+    Provides various features, like test result publishing in Grafana, that are
+    not available in the standard unittest framework.
+    """
+
+    def __init__(self):
+        super(CRTXIntegrationTest, self).__init__()
+
+    def run(self, result, debug=False):
+        super(CRTXIntegrationTest, self).run(result, debug)
+        return result
+
+
 class CRTXTest:
     """A class to represent test results."""
+
     id = None
     desc = None
     start: datetime = None
@@ -33,31 +49,32 @@ class CRTXTest:
     tags = None
 
     def __repr__(self):
-        s = ''
-        if self.status == 'SUCCESS':
+        s = ""
+        if self.status == "SUCCESS":
             # Set the color to GREEN
-            s = f'\033[92m[{self.status.upper()}] ({self.id})\033[0m'
-        elif self.status == 'FAILURE':
+            s = f"\033[92m[{self.status.upper()}] ({self.id})\033[0m"
+        elif self.status == "FAILURE":
             # Set the color to RED
-            s = f'\033[91m[{self.status.upper()}] ({self.id})\033[0m'
-            s += f'\n\tReason: {self.failure}'
-        elif self.status == 'ERROR':
+            s = f"\033[91m[{self.status.upper()}] ({self.id})\033[0m"
+            s += f"\n\tReason: {self.failure}"
+        elif self.status == "ERROR":
             # Set the color to RED
-            s = f'\033[91m[{self.status.upper()}] ({self.id})\033[0m'
-            s += f'\n\tError: {self.error}'
+            s = f"\033[91m[{self.status.upper()}] ({self.id})\033[0m"
+            s += f"\n\tError: {self.error}"
         s += f'\n\tStart: {self.start.strftime("%Y-%m-%d %H:%M:%S.%f")}'
         s += f'\n\tEnd: {self.end.strftime("%Y-%m-%d %H:%M:%S.%f")}'
-        s += f'\n\tDuration: {self.end - self.start}'
+        s += f"\n\tDuration: {self.end - self.start}"
         if self.desc:
-            s += f'\n\tDescription: {self.desc}'
+            s += f"\n\tDescription: {self.desc}"
         return s
 
 
 class CRTXTestRunner(unittest.TextTestRunner):
     """A test runner that publishes test results to the CORTEX database."""
+
     def __init__(self, *args, **kwargs):
         # Make sure the base test runner uses our custom test result class
-        kwargs['resultclass'] = CRTXTestResult
+        kwargs["resultclass"] = CRTXTestResult
         super(CRTXTestRunner, self).__init__(*args, **kwargs)
 
     def run(self, test):
@@ -77,21 +94,21 @@ class CRTXTestResult(unittest.TextTestResult):
         self.env = CRTXEnvironment.local()
 
     def addError(self, test, err):
-        self.test.status = 'ERROR'
+        self.test.status = "ERROR"
         self.test.error = err
         super().addError(test, err)
 
     def addSuccess(self, test):
-        self.test.status = 'SUCCESS'
+        self.test.status = "SUCCESS"
         super(CRTXTestResult, self).addSuccess(test)
 
     def addFailure(self, test, err):
-        self.test.status = 'FAILURE'
+        self.test.status = "FAILURE"
         self.test.failure = err[1]
         super(CRTXTestResult, self).addFailure(test, err)
 
     def startTest(self, test):
-        test_path = test.id().split('.')
+        test_path = test.id().split(".")
         self.test.id = f"{test_path[2].upper()}: {test_path[-2]}.{test_path[-1]}()"
         self.test.desc = test.shortDescription()
         self.test.start = datetime.now()
@@ -113,8 +130,12 @@ class CRTXTestResult(unittest.TextTestResult):
     def __publish(self, test: CRTXTest):
         from cortex.db.entities import Annotation
 
-        level = 'INFO' if test.status == 'SUCCESS' else 'ERROR'
-        message = test.desc if test.status == 'SUCCESS' else f"[Reason: {test.failure}]\n{test.desc}"
+        level = "INFO" if test.status == "SUCCESS" else "ERROR"
+        message = (
+            test.desc
+            if test.status == "SUCCESS"
+            else f"[Reason: {test.failure}]\n{test.desc}"
+        )
         if message is None:
             message = f"Test description not specified in the {test.id} docstring."
 
@@ -125,7 +146,7 @@ class CRTXTestResult(unittest.TextTestResult):
             host=self.env.device.HOSTNAME,
             label=test.id,
             message=message,
-            tags=['test', test.status],
+            tags=["test", test.status],
             level=level,
             end_time=test.end,
         )
@@ -133,7 +154,7 @@ class CRTXTestResult(unittest.TextTestResult):
         self.db.insert([annotation])
 
     def __repr__(self):
-        s = ''
+        s = ""
         for test in self.test_results:
             s += f"{test}\n"
         return s

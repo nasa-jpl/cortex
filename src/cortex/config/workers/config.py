@@ -58,15 +58,15 @@ class BasicWorkerConfig:
         return cls
 
     def get_preprocessors(self, preprocessor_config):
-        """Retrieve the preprocessor functions from cortex.db.transforms.preprocessors and apply the args to them. Return a list of partial functions to be applied to the data."""
+        """Retrieve the preprocessor functions from cortex.db.preprocessors and apply the args to them. Return a list of partial functions to be applied to the data."""
         preprocessors = []
         for preprocessor in preprocessor_config:
             # The name is the only key in the preprocessor dict
             name = list(preprocessor.keys())[0]
 
-            # Retrieve preprocessor function from cortex.db.transforms.preprocessors
+            # Retrieve preprocessor function from cortex.db.preprocessors
             preprocessor_func = getattr(
-                __import__("cortex.db.transforms.preprocessors", fromlist=[name]), name
+                __import__("cortex.db.preprocessors", fromlist=[name]), name
             )
 
             # The args are the value associated with the name key
@@ -77,7 +77,7 @@ class BasicWorkerConfig:
 
         return preprocessors
 
-    def transform(self, rows, **kwargs):
+    def transform(self, msg, **kwargs):
         # rows: a list of data that will be transformed into rows in the target table
         # target_class: the SQLAlchemy class for the target table
         # The self.transforms contains a map that maps the fields in the data to the columns in the target table
@@ -86,7 +86,19 @@ class BasicWorkerConfig:
         # So we need to map the data fields to the target_class fields
         entities = []
 
-        # Apply the preprocessors to the rows
+        # Convert the message into a dictionary
+        if not isinstance(msg, dict):
+            attrs = dir(msg)
+            msg_dict = {}
+
+            for attr in attrs:
+                typed = getattr(msg, attr)
+                if not attr.startswith("_") and not callable(typed):
+                    msg_dict[attr] = typed
+            msg = msg_dict
+
+        # Apply the preprocessors to the message
+        rows = [msg]
         for preprocessor in self.preprocessors:
             rows = preprocessor(data=rows)
 
@@ -95,8 +107,12 @@ class BasicWorkerConfig:
 
             # For all fields in the target_class, if the field is in the data, add it
             for field in self.target_class.__table__.columns.keys():
-                if field in row:
-                    data[field] = row[field]
+                # If it's an iterable, get the value from the row
+                if isinstance(row, dict):
+                    value = row.get(field)
+                else:
+                    value = row
+                data[field] = value
 
             # Add the kwargs to the data if the target_class has those fields
             for key, value in kwargs.items():
@@ -104,59 +120,11 @@ class BasicWorkerConfig:
                     data[key] = value
 
             # Create a new target_class with the args from the row
+            if data.get("id"):
+                del data["id"]
             entity = self.target_class(**data)
             entities.append(entity)
-
         return entities
 
-
-def test():
-    # Get basic worker config from YAML file
-    import yaml
-    from datetime import datetime
-
-    config_yaml = """
-- topic: /joint_states
-  data_type: JointState
-  msg_pkg: sensor_msgs.msg
-  hz: 5
-  target: joint_states_actual
-  preprocessors:
-    - flatten:
-        fields:
-          - name
-          - position
-          - velocity
-          - effort
-    - rename:
-        mappings:
-            name: actuator
-    """
-
-    config = yaml.load(config_yaml, Loader=yaml.FullLoader)[0]
-
-    # Create basic worker config object
-    basic_worker_config = BasicWorkerConfig(config)
-
-    right_now = datetime.now().isoformat()
-    data = dict(
-        time=right_now,
-        msg_time=right_now,
-        name=["js1", "js2", "js3", "js4"],
-        velocity=[5, 6, 7],
-        position=[8, 9, 10, 11, 12],
-        effort=[13, 14, 15, 16],
-    )
-
-    global_args = dict(robot="Test Robot", host="eels-dev1")
-
-    # Transform the flattened data into target class rows
-    entities = basic_worker_config.transform(data, **global_args)
-
-    from cortex.db import TemporalCRTX
-    db = TemporalCRTX(logging=False)
-    with db.get_session() as session:
-        session.add_all(entities)
-        session.commit()
-
-    db.shutdown(block=True)
+    def __repr__(self):
+        return f"BasicWorkerConfig(topic={self.topic}, data_type={self.data_type}, msg_pkg={self.msg_pkg}, target={self.target}, hz={self.hz}, change_fields={self.change_fields}, global_args={self.global_args})"

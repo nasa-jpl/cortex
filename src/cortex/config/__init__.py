@@ -17,3 +17,13 @@
 
 from .environment import *
 from .workers import *
+import os
+
+
+class CRTXConfigPaths:
+    root = os.path.dirname(__file__)
+    database = os.path.join(root, 'database')
+    commands = os.path.join(root, 'commands')
+    workers = os.path.join(root, 'workers')
+    environment = os.path.join(root, 'environment')
+    rosbags = os.path.join(root, 'rosbags')

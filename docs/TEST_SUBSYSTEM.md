@@ -1,1 +1,0 @@
-# CORTEX Test Automation Subsystem
