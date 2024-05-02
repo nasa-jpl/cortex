@@ -1,0 +1,16 @@
+- robot:
+    name: String, Unique
+    description: String
+    indices: name
+- actuator:
+    name: String, Unique
+    type: String
+    make: String
+    model: String
+    serial_no: String, Nullable
+    indices: name
+    foreign_keys: robot.id
+- host:
+    name: String, Unique
+    ip_address: String
+    indices: name

@@ -17,6 +17,7 @@
 
 import datetime
 import enum
+from cortex.db import TemporalCRTX
 from cortex.db.entities import Annotation
 
 
@@ -51,11 +52,27 @@ class CRTXAnnotator:
     def __init__(self, host, robot):
         self.host = host
         self.robot = robot
+        self.db = TemporalCRTX()
+
+    def annotation(self, msg):
+        a = Annotation(
+            time=datetime.datetime.fromtimestamp(msg.start_time.to_sec()),
+            msg_time=datetime.datetime.now(),
+            end_time=datetime.datetime.fromtimestamp(msg.end_time.to_sec()),
+            robot=self.robot,
+            host=self.host,
+            label=msg.label,
+            message=msg.message,
+            tags=msg.tags.value,
+            level=msg.level.value,
+        )
+        self.db.insert(a)
 
     def annotate(
         self,
         start_time: datetime,
         msg_time: datetime,
+        end_time: datetime,
         label: str,
         message: str,
         tags: list = None,
@@ -63,8 +80,9 @@ class CRTXAnnotator:
     ):
         """Annotate data with a label and message using now() as the time. Optionally, add tags and a level."""
         annotation = Annotation(
-            time=datetime.datetime.now().isoformat(),
-            msg_time=datetime.datetime.now().isoformat(),
+            time=start_time,
+            msg_time=msg_time,
+            end_time=end_time,
             robot=self.robot,
             host=self.host,
             label=label,
@@ -130,3 +148,7 @@ class CRTXAnnotator:
     def critical(self, label: str, message: str, tags: list = None):
         """Annotate data with a CRITICAL level."""
         return self.now_annotation(label, message, tags, AnnotationLevel.CRITICAL)
+
+    def __del__(self):
+        if getattr(self, "__db", None):
+            self.db.shutdown(block=True)

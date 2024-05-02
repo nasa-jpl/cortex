@@ -15,14 +15,13 @@
 #  limitations under the License.
 #
 
-from .cortex_tests import CRTXTest, CRTXTestRunner, CRTXTestResult
+from .cortex_tests import CRTXTest, CRTXTestRunner, CRTXTestResult, CRTXIntegrationTest
 from .node_stats import NodeStats
-from .robot_state import RobotState
 
 __all__ = [
-    'NodeStats',
-    'CRTXTest',
-    'CRTXTestRunner',
-    'CRTXTestResult',
-    'RobotState'
+    "NodeStats",
+    "CRTXTest",
+    "CRTXTestRunner",
+    "CRTXTestResult",
+    "CRTXIntegrationTest",
 ]

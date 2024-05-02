@@ -1,0 +1,27 @@
+<launch>
+    <group ns="cortex">
+        <node name="monitor"
+                  pkg="cortex"
+                  type="monitor.py"
+                  respawn="true"
+                  respawn_delay="10"
+                  output="screen" >
+        </node>
+
+        <node name="worker"
+                  pkg="cortex"
+                  type="worker.py"
+                  respawn="false"
+                  respawn_delay="10"
+                  output="screen" >
+        </node>
+
+        <node name="annotator"
+                  pkg="cortex"
+                  type="annotator.py"
+                  respawn="false"
+                  respawn_delay="10"
+                  output="screen" >
+        </node>
+    </group>
+</launch>

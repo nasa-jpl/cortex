@@ -83,76 +83,14 @@
     rpy: Double[]
     indices: robot+frame
 
-- global_signal_dispersion, reactive_signal_dispersion:
-    robot: String
-    dispersion: Double
-
-- estop_state:
+- estop:
     robot: String
     name: String
-    type: Integer
-    state: Integer
-    state_string: String
-
-- battery_state:
-    robot: String
-    battery_id: String
-    percentage: Double
-    estimated_runtime: Double
-    current: Double
-    voltage: Double
-    temperatures: Double[]
-    status: Integer
-
-- power_state:
-    robot: String
-    motor_power_state: Integer
-    shore_power_state: Integer
-    locomotion_charge_percentage: Double
-    locomotion_estimated_runtime: Double
+    type: Integer, Nullable
+    state: Integer, Nullable
+    state_string: String, Nullable
 
 - signal_noise_ratio:
     robot: String
-    signal: Double
-
-- mission_state:
-    robot: String
-    num_detected_artifacts: Integer
-    num_unreported_artifacts: Integer
-    num_scored_artifacts: Integer
-    max_confidence_of_unreported_artifacts: Double
-    comm_health: Integer
-    num_loaded_comm_nodes: Integer
-    time_since_last_connection: Double
-    comm_drop_requested: Integer
-    to_base_snr_dB: Double
-    to_backbone_snr_dB: Double
-    data_health: Integer
-    data_queue_size: Integer
-    data_rate: Double
-    data_transfer_time: Double
-    mobility_health: Integer
-    tilt_health: Integer
-    inv_requested: Integer
-    stairs_requested: Integer
-    user_node_requested: Integer
-    mission_node_requested: Integer
-    is_exploring: Integer
-    is_returning: Integer
-    is_comm_dropping: Integer
-    is_investigating: Integer
-    is_climbing: Integer
-    is_collision_avoiding: Integer
-    is_stuck_recovering: Integer
-    is_fault_recovering: Integer
-    is_calling_home: Integer
-    is_globalplan_enabled: Integer
-    battery_health: Integer
-    ros_node_health: Integer
-    sensor_health: Integer
-    num_deployed_robots: Integer
-    num_operational_robots: Integer
-    total_mission_time: Double
-    remaining_mission_time: Double
-    has_collision_risk: Integer
-    nearby_robots: String[]
+    iface: String
+    snr: Double

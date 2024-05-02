@@ -28,6 +28,7 @@ from cortex.types import NodeStats
 
 
 class NodeMonitor:
+    """The NodeMonitor class is used to monitor the resource utilization of a single ROS node running on a given host."""
     def __init__(self, pid: int, name: str):
         self.__pid = pid
         self.__name = name
@@ -35,14 +36,21 @@ class NodeMonitor:
 
     @property
     def pid(self):
+        """The process ID of the node being monitored."""
         return self.__pid
 
     @property
     def name(self):
+        """The name of the node being monitored."""
         return self.__name
 
     @property
     def stats(self) -> NodeStats:
+        """The utilization statistics for the node being monitored.
+
+        Returns:
+            NodeStats: The utilization statistics for the node being monitored.
+        """
         try:
             with self.__process.oneshot():
                 node_stats = NodeStats(
@@ -60,6 +68,7 @@ class NodeMonitor:
 
     @staticmethod
     def to_entity(stats: NodeStats, robot, host) -> NodeResourceUtilization:
+        """Convert the NodeStats object to a NodeResourceUtilization SQLAlchemy database entity."""
         msg_time = datetime.datetime.now()
         entity = NodeResourceUtilization(
             time=msg_time,
@@ -88,6 +97,11 @@ class CRTXMonitor:
 
     To make this class generic, Monitor does not attempt to find the nodes running on the host. Instead, the user
     must provide the pids of the nodes to monitor. See cortex.ros1 and cortex.ros2 for distro-specific implementations.
+
+    Args:
+        db_hostname (str, optional): The hostname of the database. Defaults to the `DB_HOSTNAME` environment variable.
+        db_port (str, optional): The port of the database. Defaults to the `DB_PORT` environment variable if not provided.
+        hz (int, optional): The frequency at which to collect stats. Defaults to the `MONITOR_HZ` environment variable.
     """
 
     def __init__(self, db_hostname=None, db_port=None, hz=None):
@@ -95,10 +109,11 @@ class CRTXMonitor:
         self.__db_hostname = db_hostname if db_hostname else env.system.DB_HOSTNAME
         self.__db_port = db_port if db_port else env.system.DB_PORT
         self.__hostname = env.device.HOSTNAME
-        self.__hz = hz if hz else env.system.MONITOR_HZ
+        self.__hz = hz if hz else env.MONITOR_HZ
         self.__robot = env.system.ROBOT
         self.__period = 1.0 / float(self.__hz)
         self.__node_monitors = []
+        self.__db = TemporalCRTX(self.__db_hostname, self.__db_port)
 
         self.__next_update = time.time()
 
@@ -107,10 +122,9 @@ class CRTXMonitor:
         self.__collect_stats_thread = threading.Thread(target=self.__collect_stats)
         self.__lock = threading.Lock()
 
-        self.__db = TemporalCRTX(self.__db_hostname, self.__db_port)
-
     @property
     def is_running(self):
+        """Whether the Monitor is running."""
         return self.__running
 
     def start(self):
@@ -138,6 +152,7 @@ class CRTXMonitor:
         self.__db.shutdown(block=True)
 
     def __collect_stats(self):
+        """Internal method to collect stats at the given frequency and publish them to the database."""
         while self.__running:
             self.__next_update += self.__period
 
@@ -209,8 +224,15 @@ class CRTXMonitor:
     @staticmethod
     @contextmanager
     def at_rate(hz=1):
-        """A context manager to run a Monitor at a given rate. This is useful for running a Monitor in a with statement."""
+        """A context manager to run a Monitor at the given rate. This is useful for running a Monitor in a with statement."""
         m = CRTXMonitor(hz=hz)
         yield m
         if m.is_running:
             m.stop(delay=10)
+
+    def __del__(self):
+        if getattr(self, "__db", None):
+            try:
+                self.__db.shutdown(block=True)
+            except:
+                pass

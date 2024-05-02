@@ -34,6 +34,8 @@ class CRTXEnvironment:
         self.system: typing.Union[SystemEnvironment, None] = None
         self.device: typing.Union[DeviceEnvironment, None] = None
 
+        self.MONITOR_HZ = 1.0
+
     def __iter__(self):
         for env in [self.system, self.device]:
             for attr in dir(env):

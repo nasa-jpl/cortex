@@ -1,0 +1,11 @@
+<launch>
+    <group ns="cortex">
+        <node name="worker"
+                  pkg="cortex"
+                  type="worker.py"
+                  respawn="true"
+                  respawn_delay="10"
+                  output="screen" >
+        </node>
+    </group>
+</launch>

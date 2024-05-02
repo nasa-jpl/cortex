@@ -58,15 +58,15 @@ class BasicWorkerConfig:
         return cls
 
     def get_preprocessors(self, preprocessor_config):
-        """Retrieve the preprocessor functions from cortex.db.transforms.preprocessors and apply the args to them. Return a list of partial functions to be applied to the data."""
+        """Retrieve the preprocessor functions from cortex.db.preprocessors and apply the args to them. Return a list of partial functions to be applied to the data."""
         preprocessors = []
         for preprocessor in preprocessor_config:
             # The name is the only key in the preprocessor dict
             name = list(preprocessor.keys())[0]
 
-            # Retrieve preprocessor function from cortex.db.transforms.preprocessors
+            # Retrieve preprocessor function from cortex.db.preprocessors
             preprocessor_func = getattr(
-                __import__("cortex.db.transforms.preprocessors", fromlist=[name]), name
+                __import__("cortex.db.preprocessors", fromlist=[name]), name
             )
 
             # The args are the value associated with the name key
@@ -128,56 +128,3 @@ class BasicWorkerConfig:
 
     def __repr__(self):
         return f"BasicWorkerConfig(topic={self.topic}, data_type={self.data_type}, msg_pkg={self.msg_pkg}, target={self.target}, hz={self.hz}, change_fields={self.change_fields}, global_args={self.global_args})"
-
-
-def test():
-    # Get basic worker config from YAML file
-    import yaml
-    from datetime import datetime
-
-    config_yaml = """
-- topic: /joint_states
-  data_type: JointState
-  msg_pkg: sensor_msgs.msg
-  hz: 5
-  target: joint_states_actual
-  preprocessors:
-    - flatten:
-        fields:
-          - name
-          - position
-          - velocity
-          - effort
-    - rename:
-        mappings:
-            name: actuator
-    """
-
-    config = yaml.load(config_yaml, Loader=yaml.FullLoader)[0]
-
-    # Create basic worker config object
-    basic_worker_config = BasicWorkerConfig(config)
-
-    right_now = datetime.now().isoformat()
-    data = dict(
-        time=right_now,
-        msg_time=right_now,
-        name=["js1", "js2", "js3", "js4"],
-        velocity=[5, 6, 7],
-        position=[8, 9, 10, 11, 12],
-        effort=[13, 14, 15, 16],
-    )
-
-    global_args = dict(robot="Test Robot", host="eels-dev1")
-
-    # Transform the flattened data into target class rows
-    entities = basic_worker_config.transform(data, **global_args)
-
-    from cortex.db import TemporalCRTX
-
-    db = TemporalCRTX(logging=False)
-    with db.get_session() as session:
-        session.add_all(entities)
-        session.commit()
-
-    db.shutdown(block=True)

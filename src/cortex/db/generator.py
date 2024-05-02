@@ -16,6 +16,7 @@
 #
 
 
+from pprint import pprint
 import os
 import sys
 import yaml as pyyaml
@@ -45,13 +46,16 @@ class CRTXTableGenerator:
         # Generate SQLAlchemy code from CRTX table config
         hypertable_yaml = self.__read_config_file_as_yaml("hypertable")
         hypertable_code = []
+        pprint(f"Hypertables:")
+        pprint(hypertable_yaml)
         for config in hypertable_yaml:
             hypertable_code += self.__generate(config, "hypertable")
         CRTXTableGenerator.write(hypertable_code, 'hypertable', output_dir)
 
         reltable_yaml = self.__read_config_file_as_yaml("relational")
         reltable_code = []
-        print(f"Relational config: {reltable_yaml}")
+        pprint(f"Relational tables:")
+        pprint(reltable_yaml)
         for config in reltable_yaml:
             reltable_code += self.__generate(config, "relational")
         CRTXTableGenerator.write(reltable_code, 'relational', output_dir)

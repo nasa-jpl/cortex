@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 #  Copyright (c) 2024 Jet Propulsion Laboratory. All rights reserved.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,16 +17,168 @@
 #  limitations under the License.
 #
 
-from setuptools import setup, find_packages
+import os
+import subprocess
+from setuptools import setup, find_packages, Command
 import pathlib
 
 here = pathlib.Path(__file__).parent.resolve()
 long_description = (here / "README.md").read_text(encoding="utf-8")
 cortex_packages = find_packages(where="src")
-print(f"Cortex packages: ", cortex_packages)
+
+
+class GenerateDBTables(Command):
+    """Only required when the tables have been modified and need to be regenerated."""
+    description = "(Re)Generate database tables."
+    user_options = []
+
+    def initialize_options(self):
+        self.gen_path = "src/cortex/db/generator.py"
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        # Get user input to make sure they want to regenerate the tables
+        print("\nThis command will regenerate the database tables. All generated files will be overwritten.")
+        print("Are you sure you want to continue? (yes/no)")
+        response = input("> ")
+        if response == "yes":
+            subprocess.run(["python3", self.gen_path])
+            print("Tables generated!")
+            return
+        else:
+            print("Table generation aborted.")
+            return
+
+
+class DockerCommands(Command):
+    """Initialize the Docker environment."""
+    description = "Initialize the Docker environment."
+    user_options = [
+        ("start", None, "Start the Docker environment."),
+        ("stop", None, "Stop the Docker environment."),
+        ("restart", None, "Restart the Docker environment."),
+        ("purge", None, "Wipe the containers and volumes (use with caution)."),
+    ]
+
+    def initialize_options(self):
+
+        try:
+            import dotenv
+        except:
+            print("Please install the dotenv package to use this command.")
+            return
+
+        dotenv.load_dotenv(".env")
+
+        self.start = False
+        self.stop = False
+        self.restart = False
+        self.purge = False
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        if self.start:
+            subprocess.run(["docker", "compose", "up", "-d"])
+        elif self.stop:
+            subprocess.run(["docker", "compose", "down"])
+        elif self.restart:
+            subprocess.run(["docker", "compose", "restart"])
+        elif self.purge:
+            subprocess.run(["docker", "compose", "down", "-v", "--remove-orphans"])
+        else:
+            print("\nPlease specify an option (start, stop, restart, purge).")
+            print("Example: python3 setup docker --start")
+            return
+
+
+class DatabaseCommands(Command):
+    """Initialize the database."""
+    description = "Commands for controlling the Postgres database."
+    user_options = [
+        ("init", None, "Initialize the database. Assumes the database is already running."),
+        ("wipe", None, "Wipe the database (use with caution)."),
+    ]
+
+    def initialize_options(self):
+        self.init = False
+        self.wipe = False
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        if self.init:
+            # Import the entities from cortex.db.entities and initialize the database
+            try:
+                import dotenv
+                from sqlalchemy import create_engine
+                from cortex.db.entities import Base
+            except:
+                print(f"Please run this script using the install command before initializing the database.")
+                print(f"Example: python3 setup.py install")
+                return
+
+            dotenv.load_dotenv(".env")
+            HOSTNAME = os.getenv("DB_HOSTNAME")
+            PORT = os.getenv("DB_PORT")
+            USERNAME = os.getenv("DB_USER")
+            PASSWORD = os.getenv("DB_PASSWORD")
+            DATABASE = os.getenv("DB_NAME")
+
+            DB_URL = f"postgresql+psycopg2://{USERNAME}:{PASSWORD}@{HOSTNAME}:{PORT}/{DATABASE}"
+            engine = create_engine(DB_URL)
+
+            print(f"Initializing... {engine}")
+
+            Base.metadata.create_all(engine)
+        elif self.wipe:
+            try:
+                import dotenv
+            except ModuleNotFoundError:
+                print("Please install the dotenv package to use this command.")
+                print("Example: pip install python-dotenv")
+                return
+
+            dotenv.load_dotenv(".env")
+            persistence_directory = os.getenv("PERSISTENCE_DIRECTORY")
+            db_directory = f"{persistence_directory}/cortex/timescaledb"
+            db_directory = os.path.expanduser(db_directory)
+
+            # Make sure it exists and get user confirmation
+            if os.path.exists(db_directory):
+                # Warn the user and ask if they want to continue. Use red text for emphasis.
+                print("\n\033[91mWARNING: This will delete all data in the database.\033[0m")
+                print(f"Are you sure you want to wipe the database at {db_directory}? (yes/no)")
+                response = input("> ")
+
+                if response == "yes":
+                    subprocess.run(["docker", "compose", "down", "-v", "--remove-orphans"])
+
+                    # Run the rm -rf command as root or using sudo
+                    subprocess.run(["sudo", "rm", "-rf", db_directory])
+                    print("Database wiped!")
+                else:
+                    print("Database wipe aborted.")
+            else:
+                print(f"Database directory not found at {db_directory}.")
+
+        else:
+            print("\nPlease specify an option (init, wipe).")
+            print("Example: python3 setup database --init")
+            return
+
 
 setup(
     name="jpl-cortex",
+    cmdclass={
+        "tables": GenerateDBTables,
+        "docker": DockerCommands,
+        "database": DatabaseCommands,
+    },
     version="1.0.0",
     license="Apache 2.0",
     platforms="Ubuntu 20.04",
@@ -54,6 +208,7 @@ setup(
         "SQLAlchemy==2.0.25",
         "GeoAlchemy2==0.14.3",
         "sqlalchemy-timescaledb==0.4.1",
+        "python-dotenv>=1.0.1",
     ],
     project_urls={  # Optional
         "Bug Reports": "https://github.com/nasa-jpl/cortex/issues",

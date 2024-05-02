@@ -15,14 +15,20 @@
 #  limitations under the License.
 
 import time
-import typing
 from datetime import datetime
+from typing import Union
+
+from cortex.config import BasicWorkerConfig
 from cortex.db import TemporalCRTX
-from cortex.config.workers import *
 
 
 class CRTXWorker:
-    def __init__(self, config: typing.Union[BasicWorkerConfig]):
+    """A worker class for processing ROS messages and inserting them into the CORTEX database.
+
+    Args:
+        config: The configuration for the worker (currently only supports `BasicWorkerConfig`).
+    """
+    def __init__(self, config: Union[BasicWorkerConfig]):
         self.__topic = config.topic
         self.__data_type = config.data_type
         self.__msg_pkg = config.msg_pkg
@@ -30,25 +36,24 @@ class CRTXWorker:
         self.__transform = config.transform
         self.__global_args = config.global_args
         self.__change_fields = config.change_fields
-
         self.__desired_delta = float(1 / config.hz) if config.hz is not None else None
         self.__previous_msg = None
         self.__previous_time = None
-
         self.__db = TemporalCRTX()
 
     @property
     def topic(self):
+        """The topic that the worker is subscribed to."""
         return self.__topic
 
     @property
     def data_class(self):
-        # Get the package msg_pkg
+        """The class of the data type being processed on the topic."""
         msg_pkg = __import__(self.__msg_pkg, fromlist=[self.__data_type])
         return getattr(msg_pkg, self.__data_type)
 
     def callback(self, msg, **kwargs):
-        # This callback should be called by the ROS subscriber
+        """The callback function for the worker. Processes the message and inserts it into the database."""
         if self.__should_process(msg):
             current_time = time.time()
 
@@ -72,6 +77,7 @@ class CRTXWorker:
             self.__previous_time = current_time
 
     def __should_process(self, msg):
+        """Determines if the message should be processed and inserted based on the worker's configuration."""
         # Note that any entry in change_fields effectively overrides the hz setting
         if self.__change_fields:
             # Always process the first message
@@ -103,7 +109,11 @@ class CRTXWorker:
         return True
 
     def __del__(self):
-        self.__db.shutdown(block=True)
+        if getattr(self, "__db", None):
+            try:
+                self.__db.shutdown(block=True)
+            except:
+                pass
 
     def __repr__(self):
         return f"CRTXWorker(topic={self.__topic}, data_type={self.__data_type}, msg_pkg={self.__msg_pkg}, hz={self.__hz}, change_fields={self.__change_fields}, global_args={self.__global_args})"

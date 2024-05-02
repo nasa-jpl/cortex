@@ -1,4 +1,4 @@
-#  Copyright (c) 2024 Jet Propulsion Laboratory. All rights reserved.
+#  Copyright (c) 2023-2024 Jet Propulsion Laboratory. All rights reserved.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -13,15 +13,14 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+#
 
-from .crtxannotator import CRTXAnnotator, AnnotationLevel, AnnotationTags
-from .crtxmonitor import CRTXMonitor
-from .crtxworker import CRTXWorker
+# ! DO NOT MANUALLY INVOKE THIS setup.py, USE CATKIN INSTEAD
 
-__all__ = [
-    "AnnotationLevel",
-    "AnnotationTags",
-    "CRTXAnnotator",
-    "CRTXMonitor",
-    "CRTXWorker",
-]
+from setuptools import setup
+from catkin_pkg.python_setup import generate_distutils_setup
+
+# fetch values from package.xml
+setup_args = generate_distutils_setup(packages=['cortex'])
+
+setup(**setup_args)

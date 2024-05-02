@@ -16,6 +16,7 @@
 #
 
 import os
+import typing
 import yaml
 
 from .config import *
@@ -27,18 +28,34 @@ class WorkerConfig:
     """A class to read and store worker configurations from a YAML file."""
 
     @staticmethod
-    def get_basic_worker_config(global_args=None):
-        config = WorkerConfig.get_config("basic")
+    def get_basic_worker_config(global_args=None, config_path=None) -> typing.List[dict]:
+        config = WorkerConfig.get_config("basic", config_path=config_path)
         if global_args:
             for cfg in config:
                 cfg["global_args"] = global_args
         return config
 
     @staticmethod
-    def get_config(config_type: str):
+    def get_config(config_type: str, config_path: str = None):
         # Get config_type.yaml file path
-        config_file = os.path.join(WORKER_CONFIG_PATH, config_type + ".yaml")
-        print(f"Config file: {config_file}")
+
+        if config_path:
+            config_file = os.path.join(config_path, config_type + ".yaml")
+        else:
+            config_file = os.path.join(WORKER_CONFIG_PATH, config_type + ".yaml")
+
         # Read the file
+        with open(config_file, "r") as file:
+            return yaml.safe_load(file)
+
+    @staticmethod
+    def print_default_config(config_type: str):
+        config_file = os.path.join(WORKER_CONFIG_PATH, config_type + ".yaml")
+        with open(config_file, "r") as file:
+            print(file.read())
+
+    @staticmethod
+    def get_default_config(config_type: str):
+        config_file = os.path.join(WORKER_CONFIG_PATH, config_type + ".yaml")
         with open(config_file, "r") as file:
             return yaml.safe_load(file)
