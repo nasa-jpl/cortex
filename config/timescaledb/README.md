@@ -1,4 +1,4 @@
-# Server Initialization
+# PostgreSQL + TimescaleDB Initialization (Docker)
 
 In previous versions, server initialization was a much bigger ordeal. Before the TimescaleDB dialect became available
 for use in SQLAlchemy, the tables had to be declared both in SQL files and as SQLAlchemy classes in Python. However,
@@ -142,4 +142,12 @@ Using this grammar to create a table in YAML:
   ...
   [indices: <column_index>]
   [foreign_keys: <foreign_key>]
+```
+
+# Table Generation
+If you decide to modify or add your own tables, you will need to re-run the table generation
+process. This is simple enough:
+
+```bash
+./setup.py tables
 ```

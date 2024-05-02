@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<package format="2">
+    <name>cortex</name>
+    <version>1.0.0</version>
+    <description>The CORTEX robotics framework for ROS1.</description>
+
+    <!-- One maintainer tag required, multiple allowed, one person per tag -->
+    <maintainer email="Rob.Royce@jpl.nasa.gov">Rob Royce</maintainer>
+    <license>Apache 2.0</license>
+    <author email="Rob.Royce@jpl.nasa.gov">Rob Royce</author>
+
+    <buildtool_depend>catkin</buildtool_depend>
+    <depend>message_runtime</depend>
+    <depend>message_generation</depend>
+</package>
