@@ -25,13 +25,10 @@ operating complex robotics systems.
 
 # Installation
 
-CORTEX is installed as a Python library using the `setup.py` script.
+To install the CORTEX Python library, clone the repository and run the following command:
 
 ```shell
-./setup.py install
-
-# If you get a permission denied error:
-sudo ./setup.py install
+python3 -m pip install --user -e .
 ```
 
 After installing the CORTEX Python library, you can import the modules as follows:
@@ -52,6 +49,15 @@ Postgres database with TimescaleDB, and a Grafana dashboard for visualizing. We 
 installed on your system. If you do not have Docker installed, you can download it from the
 [Docker website](https://docs.docker.com/engine/). The following commands require the `docker compose` command
 to work properly.
+
+Important: you must create the `PERSISTENCE_DIRECTORY` (see `.env`) before building the Docker containers.
+This directory will be used to store the database and Grafana data. The default location is `~/Data`.
+
+```shell
+mkdir -p <PERSISTENCE_DIRECTORY_AS_SPECIFIC_IN_.ENV>
+```
+
+To build the Docker images, run the following command:
 
 ```
 ./setup.py docker --start    start the CORTEX services (Postgres and Grafana)
@@ -110,17 +116,3 @@ We have developed additional agents but have not added them to the open source r
   services.
 - **sampler**: collects data from sources that do not publish on open topics. This includes collecting data by
   performing service/action calls, or by reading data from files.
-
-## Implementation
-
-The following sections describe the various implementations of CORTEX (current and future).
-
-### ROS1
-
-While CORTEX agents are generally ROS-agnostic, we have developed a set of ROS nodes that can be used to interface with
-the CORTEX framework. These nodes are implemented in Python and can be run on any system that has ROS installed.
-Simply copy the `ros1/` package into your ROS workspace.
-
-### ROS2
-
-We are currently working on the ROS2 implementation. Please check back soon.
