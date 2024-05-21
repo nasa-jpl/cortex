@@ -38,7 +38,10 @@ class ROS1Monitor(CRTXMonitor):
         # Get an initial list of ROS nodes and their PIDs
         pids = ROS1Utils.get_node_pids(hash=CacheUtils.expire_by_ttl())
         for node, pid in pids.items():
-            self.add_node(pid, node)
+            try:
+                self.add_node(pid, node)
+            except Exception as e:
+                rospy.logerr(f"Error adding node (ignoring) {node}: {e}")
         self.start()
 
         while not rospy.is_shutdown():
@@ -58,8 +61,8 @@ class ROS1Monitor(CRTXMonitor):
                 for node in added:
                     try:
                         self.add_node(new_pids[node], node)
-                    except ValueError as e:
-                        rospy.logerr(f"Error adding node {node}: {e}")
+                    except Exception as e:
+                        rospy.logerr(f"Error adding node (ignoring) {node}: {e}")
                         del new_pids[node]
                 for node in removed:
                     self.remove_node(node)
