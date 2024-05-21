@@ -22,7 +22,7 @@ from xmlrpc.client import ServerProxy
 
 
 class ROS1Utils:
-    CALLER_ID = "/rosout"
+    CALLER_ID = "/cortex"
 
     def __init__(self):
         pass
