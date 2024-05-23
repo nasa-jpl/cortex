@@ -33,14 +33,9 @@ def parse_timestamps(fields: typing.List[str], data: typing.List[dict]):
                     elif isinstance(row[field], genpy.Duration):
                         row[field] = row[field].to_sec()
                     else:
-                        print(f"{field} is neither a Time nor a Duration object")
                         row[field] = datetime.fromtimestamp(row[field])
-
-                    print(f"Converted {field} to datetime object ({row[field]})")
                 except:
-                    print(f"ROS1 conversion not available... trying generic conversion")
                     row[field] = datetime.fromtimestamp(row[field])
-
                 try:
                     row[field] = datetime.fromtimestamp(row[field])
                 except:

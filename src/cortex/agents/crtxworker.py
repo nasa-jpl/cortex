@@ -18,7 +18,7 @@ import time
 from datetime import datetime
 from typing import Union
 
-from cortex.config import BasicWorkerConfig
+from cortex.config import BasicWorkerConfig, CRTXEnvironment
 from cortex.db import TemporalCRTX
 
 
@@ -39,7 +39,13 @@ class CRTXWorker:
         self.__desired_delta = float(1 / config.hz) if config.hz is not None else None
         self.__previous_msg = None
         self.__previous_time = None
-        self.__db = TemporalCRTX()
+
+        env = CRTXEnvironment.local()
+        self.__db = TemporalCRTX(
+            hostname=env.system.DB_HOSTNAME,
+            port=env.system.DB_PORT,
+            database=env.system.DB_NAME,
+        )
 
     @property
     def topic(self):
@@ -57,7 +63,7 @@ class CRTXWorker:
         if self.__should_process(msg):
             current_time = time.time()
 
-            if hasattr(msg, "__slots__") and "header" in msg.__slots__:
+            if hasattr(msg, "__slots__") and "header" in msg.__slots__ and hasattr(msg.header, "stamp"):
                 # ROS1 message
                 msg_time = datetime.fromtimestamp(msg.header.stamp.to_sec())
             else:

@@ -24,6 +24,7 @@ class SystemEnvironment:
         # Set any default values here, otherwise leave them as None
         self.DB_HOSTNAME = "127.0.0.1"
         self.DB_PORT = "5432"
+        self.DB_NAME = "postgres"
         self.RUN_NUMBER = "0"
         self.RUN_START_TIME = datetime.datetime.now().isoformat()
         self.RUN_LABEL = "default"

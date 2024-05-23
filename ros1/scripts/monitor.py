@@ -41,7 +41,8 @@ class ROS1Monitor(CRTXMonitor):
             try:
                 self.add_node(pid, node)
             except Exception as e:
-                rospy.logerr(f"Error adding node (ignoring) {node}: {e}")
+                rospy.logerr_throttle(300, f"Error adding node (ignoring) {node} - {e}")
+
         self.start()
 
         while not rospy.is_shutdown():
@@ -62,7 +63,7 @@ class ROS1Monitor(CRTXMonitor):
                     try:
                         self.add_node(new_pids[node], node)
                     except Exception as e:
-                        rospy.logerr(f"Error adding node (ignoring) {node}: {e}")
+                        rospy.logerr_throttle(300, f"Error adding node (ignoring) {node} - {e}")
                         del new_pids[node]
                 for node in removed:
                     self.remove_node(node)

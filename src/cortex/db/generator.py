@@ -61,12 +61,6 @@ class CRTXTableGenerator:
         CRTXTableGenerator.write(reltable_code, 'relational', output_dir)
 
     @staticmethod
-    def instantiate():
-        from cortex.db import TemporalCRTX
-        db = TemporalCRTX()
-        db.shutdown(block=True)
-
-    @staticmethod
     def write(code, table_type, output_dir):
         file = os.path.join(output_dir, f"{table_type}.py")
 

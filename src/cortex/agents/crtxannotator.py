@@ -17,6 +17,8 @@
 
 import datetime
 import enum
+
+from cortex.config import CRTXEnvironment
 from cortex.db import TemporalCRTX
 from cortex.db.entities import Annotation
 
@@ -52,7 +54,14 @@ class CRTXAnnotator:
     def __init__(self, host, robot):
         self.host = host
         self.robot = robot
-        self.db = TemporalCRTX()
+
+        env = CRTXEnvironment.local()
+
+        self.db = TemporalCRTX(
+            hostname=env.system.DB_HOSTNAME,
+            port=env.system.DB_PORT,
+            database=env.system.DB_NAME,
+        )
 
     def annotation(self, msg):
         a = Annotation(
