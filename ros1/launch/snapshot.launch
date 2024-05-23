@@ -1,0 +1,8 @@
+<launch>
+    <node name="snapshot"
+          pkg="cortex"
+          type="snapshot.py"
+          respawn="false"
+          output="screen">
+    </node>
+</launch>
