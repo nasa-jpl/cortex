@@ -42,7 +42,7 @@ class ROS1Worker:
 
 def main():
     env = CRTXEnvironment.local()
-    global_args = dict(robot=env.system.ROBOT, host=env.device.HOSTNAME)
+    global_args = dict(robot=env.system.ROBOT_NAME, host=env.device.HOSTNAME)
 
     print("Starting ROS1 worker...")
     worker = ROS1Worker(node_name="~", global_args=global_args)

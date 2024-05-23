@@ -28,7 +28,7 @@ class SystemEnvironment:
         self.RUN_START_TIME = datetime.datetime.now().isoformat()
         self.RUN_LABEL = "default"
         self.RUN_DESCRIPTION = ""
-        self.ROBOT = "Unnamed Robot"
+        self.ROBOT_NAME = "Robot"
 
     @staticmethod
     def local() -> "SystemEnvironment":

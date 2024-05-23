@@ -110,7 +110,7 @@ class CRTXMonitor:
         self.__db_port = db_port if db_port else env.system.DB_PORT
         self.__hostname = env.device.HOSTNAME
         self.__hz = hz if hz else env.MONITOR_HZ
-        self.__robot = env.system.ROBOT
+        self.__robot = env.system.ROBOT_NAME
         self.__period = 1.0 / float(self.__hz)
         self.__node_monitors = []
         self.__db = TemporalCRTX(self.__db_hostname, self.__db_port)

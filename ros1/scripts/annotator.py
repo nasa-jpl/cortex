@@ -52,7 +52,7 @@ class ROS1Annotator(CRTXAnnotator):
 
 def main():
     env = CRTXEnvironment.local()
-    annotator = ROS1Annotator("~", env.device.HOSTNAME, env.system.ROBOT)
+    annotator = ROS1Annotator("~", env.device.HOSTNAME, env.system.ROBOT_NAME)
     annotator.spin()
 
 

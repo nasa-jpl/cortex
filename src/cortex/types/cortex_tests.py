@@ -142,7 +142,7 @@ class CRTXTestResult(unittest.TextTestResult):
         annotation = Annotation(
             time=test.start,
             msg_time=test.start,
-            robot=self.env.system.ROBOT,
+            robot=self.env.system.ROBOT_NAME,
             host=self.env.device.HOSTNAME,
             label=test.id,
             message=message,
