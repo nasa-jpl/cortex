@@ -23,7 +23,7 @@ import subprocess
 from datetime import datetime
 from cortex.config import CRTXEnvironment
 from cortex.db import TemporalCRTX
-from cortex.db.entities import Environment
+from cortex.db.entities import Environment, Workspace
 from pathlib import Path
 from time import sleep
 
@@ -46,14 +46,26 @@ def get_workspace_commit_hash(env, now_time, ros_time):
         try:
             git_proc = subprocess.run(['git', 'rev-parse', 'HEAD'], cwd=repo_path, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             commit_hash = git_proc.stdout.decode('utf-8').strip()
-            entities.append(Environment(
+
+            git_proc = subprocess.run(['git', 'status', '--porcelain'], cwd=repo_path, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            uncommitted_changes = git_proc.stdout.decode('utf-8').strip()
+            uncommitted_changes = len(uncommitted_changes.strip()) > 0
+
+            git_proc = subprocess.run(['git', 'branch', '--show-current'], cwd=repo_path, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            branch_name = git_proc.stdout.decode('utf-8').strip()
+
+            ws = Workspace(
                 time=now_time,
                 msg_time=ros_time,
-                host=env.device.HOSTNAME,
                 robot=env.system.ROBOT_NAME,
-                key=f"{repo_path}".replace(f"{root_path}", ""),
-                value=commit_hash
-            ))
+                host=env.device.HOSTNAME,
+                package_name=f"{repo_path}".replace(f"{root_path}", ""),
+                commit_hash=commit_hash,
+                branch_name=branch_name,
+                uncommitted_changes=uncommitted_changes,
+            )
+
+            entities.append(ws)
         except Exception as e:
             print(f"Failed to get commit hash for {repo_path}: {e}")
 
