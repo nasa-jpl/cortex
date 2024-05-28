@@ -34,6 +34,8 @@ class GenerateDBTables(Command):
 
     def initialize_options(self):
         self.gen_path = "src/cortex/db/generator.py"
+        self.cfg_path = "src/cortex/config/database/"
+        self.output_path = "src/cortex/db/entities/"
 
     def finalize_options(self):
         pass
@@ -44,12 +46,19 @@ class GenerateDBTables(Command):
         print("Are you sure you want to continue? (yes/no)")
         response = input("> ")
         if response == "yes":
-            subprocess.run(["python3", self.gen_path])
+            try:
+                res = subprocess.run([
+                    "python3", self.gen_path,
+                    f"--config={self.cfg_path}",
+                    f"--output={self.output_path}"
+                ])
+                res.check_returncode()
+            except subprocess.CalledProcessError as e:
+                print(f"Failed to generate tables: {e}")
+                return
             print("Tables generated!")
-            return
         else:
             print("Table generation aborted.")
-            return
 
 
 class DockerCommands(Command):

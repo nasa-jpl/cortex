@@ -16,7 +16,7 @@
 #
 
 
-SQLALCHEMY_IMPORT_TEMPLATE = """from sqlalchemy import Column, Integer, String, DateTime, Index, ARRAY, ForeignKey, DOUBLE_PRECISION
+SQLALCHEMY_IMPORT_TEMPLATE = """from sqlalchemy import Column, Integer, String, DateTime, Index, ARRAY, ForeignKey, DOUBLE_PRECISION, Boolean
 from cortex.db.entities import Base
 """
 

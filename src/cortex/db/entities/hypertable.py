@@ -17,7 +17,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-from sqlalchemy import Column, Integer, String, DateTime, Index, ARRAY, ForeignKey, DOUBLE_PRECISION
+from sqlalchemy import Column, Integer, String, DateTime, Index, ARRAY, ForeignKey, DOUBLE_PRECISION, Boolean
 from cortex.db.entities import Base
 
 
@@ -101,6 +101,23 @@ class Heartbeat(Base):
 
 
 Index('idx_heartbeat_robot_label', Heartbeat.robot, Heartbeat.label)
+
+
+class Workspace(Base):
+    __tablename__ = 'ts_workspace'
+    __table_args__ = ({'timescaledb_hypertable': {'time_column_name': 'time', 'chunk_time_interval': '1 day'}})
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    time = Column(DateTime(timezone=True), primary_key=True, nullable=False)
+    msg_time = Column(DateTime(timezone=True), nullable=True)
+    robot = Column(String, nullable=False)
+    host = Column(String, nullable=False)
+    package_name = Column(String, nullable=False)
+    commit_hash = Column(String, nullable=False)
+    branch_name = Column(String, nullable=False)
+    uncommitted_changes = Column(Boolean, nullable=False)
+
+    def __repr__(self):
+        return f"""<Workspace(id='{self.id}', time='{self.time}', msg_time='{self.msg_time}', robot='{self.robot}', host='{self.host}', package_name='{self.package_name}', commit_hash='{self.commit_hash}', branch_name='{self.branch_name}', uncommitted_changes='{self.uncommitted_changes}')>"""
 
 
 class Metric(Base):

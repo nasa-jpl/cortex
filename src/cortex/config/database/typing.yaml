@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Used to define supported types and map them to SQLAlchemy types
+# Used to define supported (yaml config file) types and map them to SQLAlchemy types
 cortex_type_map:
   - DateTime: DateTime(timezone=True)
   - Double: DOUBLE_PRECISION
@@ -9,6 +9,8 @@ cortex_type_map:
   - Integer[]: ARRAY(Integer)
   - String: String
   - String[]: ARRAY(String)
+  - Boolean: Boolean
+  - Boolean[]: ARRAY(Boolean)
 
 # Used for special handling of certain row types
 cortex_qualifiers:

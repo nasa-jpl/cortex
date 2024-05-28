@@ -15,6 +15,14 @@
     end_time: DateTime, Nullable
     indices: robot+label
 
+- workspace:
+    robot: String
+    host: String
+    package_name: String
+    commit_hash: String
+    branch_name: String
+    uncommitted_changes: Boolean
+
 - metric, parameter:
     robot: String
     name: String

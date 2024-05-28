@@ -27,20 +27,25 @@ from cortex.db.templates import SQLALCHEMY_TEMPLATE, SQLALCHEMY_IMPORT_TEMPLATE,
 
 class CRTXTableGenerator:
     # Class for generating SQLAlchemy code from CRTX table config
-    def __init__(self, cortex_config_paths: CRTXConfigPaths = CRTXConfigPaths):
+    def __init__(self, config_path: str):
         # List of valid CRTX types
-        self.__base_types = ["String", "Integer", "Double"]
-        self.__array_types = [base_type + "[]" for base_type in self.__base_types]
-        self.__column_types = self.__base_types + self.__array_types + ["DateTime"]
-        self.__config_path = cortex_config_paths.database
+
+        # TODO: change this to use the `typing.yaml` file
+        self.__config_path = config_path
 
         if not os.path.exists(self.__config_path):
             raise FileNotFoundError(f"Config path {self.__config_path} does not exist!")
 
         # Read the typing config file
         db_config = self.__read_config_file_as_yaml('typing')
-        self.__type_map = {list(mapping.keys())[0]: list(mapping.values())[0] for mapping in db_config['cortex_type_map']}
+        self.__type_map = {
+            list(mapping.keys())[0]: list(mapping.values())[0]
+            for mapping in db_config['cortex_type_map']
+        }
         self.__qualifiers = db_config['cortex_qualifiers']
+
+        # Column types are all the keys in __type_map
+        self.__column_types = list(self.__type_map.keys())
 
     def generate(self, output_dir: str = CORTEX_ENTITIES_DIR):
         # Generate SQLAlchemy code from CRTX table config
@@ -76,6 +81,8 @@ class CRTXTableGenerator:
             f.write("\n\n")
             f.write("\n".join(code))
             f.write(TEST_SCRIPT)
+        print(f"Tables written to {file}")
+
 
     def __get_config_file(self, name: str):
         # Return the config file for the specified table type
@@ -83,7 +90,9 @@ class CRTXTableGenerator:
             raise FileNotFoundError(
                 f"Config path {self.__config_path} does not contain a {name}.yaml file!"
             )
-        return os.path.join(self.__config_path, f"{name}.yaml")
+        config_file_path = os.path.join(self.__config_path, f"{name}.yaml")
+        print(f"Using config file {config_file_path}...")
+        return config_file_path
 
     def __read_config_file_as_yaml(self, name: str):
         """Read the specified config file as YAML"""
@@ -282,10 +291,27 @@ class CRTXTableGenerator:
         return sorted(list(set(table_names)))
 
 
-def test():
-    gen = CRTXTableGenerator()
-    gen.generate()
+def main(args):
+    gen = CRTXTableGenerator(args.config)
+    gen.generate(args.output)
 
 
 if __name__ == "__main__":
-    test()
+    # Setup argparse
+    import argparse
+    parser = argparse.ArgumentParser(description="Generate SQLAlchemy code from CRTX table config")
+    parser.add_argument(
+        "-c",
+        "--config",
+        help="Path to the directory containing the CRTX table config files",
+        required=True,
+    )
+    parser.add_argument(
+        "-o",
+        "--output",
+        help="Path to the directory where the SQLAlchemy code will be written",
+        default=CORTEX_ENTITIES_DIR,
+    )
+
+    args = parser.parse_args()
+    main(args)
